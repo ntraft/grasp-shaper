@@ -18,10 +18,10 @@ using systems::reconnect;
 
 void printMenu() {
 	printf("Commands:\n");
-	printf("  [Enter]\tInitiate a grasp\n");
-	printf("  h\t\tMove to the home position\n");
-	printf("  i\t\tIdle (release position/orientation constraints)\n");
-	printf("  q\t\tQuit\n");
+	printf("  g\tInitiate a grasp\n");
+	printf("  h\tMove to the home position\n");
+	printf("  i\tIdle (release position/orientation constraints)\n");
+	printf("  q\tQuit\n");
 }
 
 void msleep(int ms) {
@@ -80,7 +80,7 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 		std::getline(std::cin, line);
 
 		switch (line[0]) {
-		case '\0':
+		case 'g':
 			graspAndLift(wam, hand);
 			break;
 
