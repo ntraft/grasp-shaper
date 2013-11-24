@@ -18,7 +18,7 @@ using systems::reconnect;
 
 void printMenu() {
 	printf("Commands:\n");
-	printf("  g\t\tInitiate a grasp\n");
+	printf("  [Enter]\tInitiate a grasp\n");
 	printf("  h\t\tMove to the home position\n");
 	printf("  i\t\tIdle (release position/orientation constraints)\n");
 	printf("  q\t\tQuit\n");
@@ -80,12 +80,8 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 		std::getline(std::cin, line);
 
 		switch (line[0]) {
-		case 'g':
-			graspAndLift(wam, hand);
-			break;
-
 		case '\0':
-			printf("It's a null character.\n");
+			graspAndLift(wam, hand);
 			break;
 
 		case 'h':
