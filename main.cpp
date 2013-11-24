@@ -30,8 +30,7 @@ void sleep(unsigned int ms) {
 }
 
 template<size_t DOF, int R, int C, typename Units>
-void blockingMove(systems::Wam<DOF>& wam, jp_type pos) {
-	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
+void blockingMove(systems::Wam<DOF>& wam, math::Matrix<R,C, Units> pos) {
 	std::cout << "Move to: " << pos << std::endl;
 	wam.moveTo(pos);
 	printf("Waiting for move to complete...\n");
@@ -48,6 +47,7 @@ void graspAndLift(systems::Wam<DOF>& wam) {
 	double lp[] = {0, 0.437, 0, 2.1, 0, -1.028, 0};
 	jp_type graspPos = jp_type(gp);
 	jp_type liftPos = jp_type(lp);
+
 	blockingMove(wam, graspPos);
 //	sleep(1000);
 	blockingMove(wam, liftPos);
