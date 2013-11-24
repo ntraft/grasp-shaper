@@ -63,7 +63,13 @@ void ungrasp(Hand* hand) {
 
 template<size_t DOF>
 void liftAndReturn(systems::Wam<DOF>& wam) {
-	// TODO
+	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
+	jp_type targetPos = wam.getJointPositions();
+	jp_type liftPos = jp_type(targetPos);
+	liftPos[1] -= 0.3;
+	wam.moveTo(liftPos);
+	Pause(2000);
+	wam.moveTo(targetPos);
 }
 
 template<size_t DOF>
