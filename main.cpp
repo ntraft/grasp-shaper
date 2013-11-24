@@ -17,10 +17,8 @@ using systems::reconnect;
 
 BARRETT_UNITS_TEMPLATE_TYPEDEFS(7u);
 
-double gp[] = {0, 0.713, 0, 2.211, 0, -1.458, 0};
-double lp[] = {0, 0.437, 0, 2.1, 0, -1.028, 0};
-jp_type graspPos = jp_type(gp);
-jp_type liftPos = jp_type(lp);
+jp_type graspPos;
+jp_type liftPos;
 
 
 void printMenu() {
@@ -58,6 +56,12 @@ void graspAndLift(systems::Wam<DOF>& wam) {
 
 template<size_t DOF>
 int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) {
+	graspPos[1] = 0.713;
+	graspPos[3] = 2.211;
+	graspPos[5] = -1.458;
+	liftPos[1] = 0.437;
+	liftPos[3] = 2.100;
+	liftPos[5] = -1.028;
 
 	wam.gravityCompensate();
 
