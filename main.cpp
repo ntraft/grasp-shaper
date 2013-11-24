@@ -29,8 +29,16 @@ void sleep(unsigned int ms) {
 	boost::this_thread::sleep(boost::posix_time::milliseconds(ms));
 }
 
+void grasp(Hand* hand) {
+	hand->close();
+}
+
+void ungrasp(Hand* hand) {
+	hand->open();
+}
+
 template<size_t DOF>
-void graspAndLift(systems::Wam<DOF>& wam) {
+void graspAndLift(systems::Wam<DOF>& wam, Hand* hand) {
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
 	double gp[] = {0, 0.713, 0, 2.211, 0, -1.458, 0};
 	double lp[] = {0, 0.437, 0, 2.1, 0, -1.028, 0};
@@ -39,16 +47,31 @@ void graspAndLift(systems::Wam<DOF>& wam) {
 
 	wam.moveTo(graspPos);
 	sleep(1000);
+	grasp(hand);
+	sleep(1000);
 	wam.moveTo(liftPos);
 	sleep(1000);
 	wam.moveTo(graspPos);
+	ungrasp(hand);
 }
 
 template<size_t DOF>
 int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) {
+	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
+	double ip[] = {0, 0, 0, 2.211, 0, 0, 0};
+	jp_type initPos = jp_type(ip);
+
+	Hand* hand;
+	if (pm.foundHand()) {
+		hand = pm.getHand();
+	} else {
+		printf("No hand found! Exiting.");
+		return 0;
+	}
 
 	wam.gravityCompensate();
-
+	wam.moveTo(initPos);
+	hand->initialize();
 	printMenu();
 
 	std::string line;
@@ -59,7 +82,7 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 
 		switch (line[0]) {
 		case '\n':
-			graspAndLift(wam);
+			graspAndLift(wam, hand);
 			break;
 
 		case 'h':
