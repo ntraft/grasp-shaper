@@ -28,8 +28,23 @@ void msleep(int ms) {
 	boost::this_thread::sleep(boost::posix_time::milliseconds(ms));
 }
 
-void grasp(Hand* hand) {
-	hand->close();
+void grasp(Hand* hand, char graspType) {
+	double vel[] = {0.25, 0.25, 0.25, 0};
+	Hand::jv_type jv = Hand::jv_type(vel);
+	double pos[] = {0.25, 0.25, 0.25, 0};
+	Hand::jp_type jp = Hand::jp_type(pos);
+
+	switch (graspType) {
+	case '\0':
+		hand->close();
+		break;
+	case 'v':
+		hand->velocityMove(jv);
+		break;
+	case 't':
+		hand->trapezoidalMove(jp);
+		break;
+	}
 }
 
 void ungrasp(Hand* hand) {
@@ -37,7 +52,7 @@ void ungrasp(Hand* hand) {
 }
 
 template<size_t DOF>
-void graspAndLift(systems::Wam<DOF>& wam, Hand* hand) {
+void graspAndLift(systems::Wam<DOF>& wam, Hand* hand, char graspType) {
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
 	double gp[] = {0, 0.713, 0, 2.211, 0, -1.458, 0};
 	double lp[] = {0, 0.437, 0, 2.1, 0, -1.028, 0};
@@ -46,7 +61,7 @@ void graspAndLift(systems::Wam<DOF>& wam, Hand* hand) {
 
 	wam.moveTo(graspPos);
 	msleep(1000);
-	grasp(hand);
+	grasp(hand, graspType);
 	msleep(1000);
 	wam.moveTo(liftPos);
 	msleep(1000);
@@ -57,9 +72,6 @@ void graspAndLift(systems::Wam<DOF>& wam, Hand* hand) {
 template<size_t DOF>
 int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) {
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
-	double ip[] = {0, 0, 0, 2.211, 0, 0, 0};
-	jp_type initPos = jp_type(ip);
-
 	Hand* hand;
 	if (pm.foundHand()) {
 		hand = pm.getHand();
@@ -69,6 +81,9 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 	}
 
 	wam.gravityCompensate();
+	msleep(1000);
+	jp_type initPos = wam.getHomePosition();
+	initPos[3] = 2.211;
 	wam.moveTo(initPos);
 	hand->initialize();
 	printMenu();
@@ -81,7 +96,7 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 
 		switch (line[0]) {
 		case 'g':
-			graspAndLift(wam, hand);
+			graspAndLift(wam, hand, line[1]);
 			break;
 
 		case 'h':
