@@ -14,10 +14,6 @@ include_directories(${BARRETT_INCLUDE_DIRS})
 link_directories(${BARRETT_LIBRARY_DIRS})
 add_definitions(${BARRETT_DEFINITIONS})
 
-## curses
-find_package(Curses REQUIRED)
-include_directories(${CURSES_INCLUDE_DIR})
-
 
 function(add_programs)
 	foreach (prog ${ARGV})
@@ -29,6 +25,3 @@ endfunction()
 add_programs(
 	main
 )
-
-# ex04 uses the ncurses library
-#target_link_libraries(ex04_display_basic_info ${CURSES_LIBRARIES})
