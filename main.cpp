@@ -15,13 +15,6 @@ using systems::connect;
 using systems::disconnect;
 using systems::reconnect;
 
-BARRETT_UNITS_TEMPLATE_TYPEDEFS(7u);
-
-double gp[] = {0, 0.713, 0, 2.211, 0, -1.458, 0};
-double lp[] = {0, 0.437, 0, 2.1, 0, -1.028, 0};
-jp_type graspPos = jp_type(gp);
-jp_type liftPos = jp_type(lp);
-
 
 void printMenu() {
 	printf("Commands:\n");
@@ -36,10 +29,11 @@ void sleep(unsigned int ms) {
 	boost::this_thread::sleep(boost::posix_time::milliseconds(ms));
 }
 
-template<size_t DOF>
+template<size_t DOF, int R, int C, typename Units>
 void blockingMove(systems::Wam<DOF>& wam, jp_type pos) {
+	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
 	std::cout << "Move to: " << pos << std::endl;
-//	wam.moveTo(pos);
+	wam.moveTo(pos);
 	printf("Waiting for move to complete...\n");
 	while (!wam.moveIsDone()) {
 		sleep(10);
@@ -49,6 +43,11 @@ void blockingMove(systems::Wam<DOF>& wam, jp_type pos) {
 
 template<size_t DOF>
 void graspAndLift(systems::Wam<DOF>& wam) {
+	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
+	double gp[] = {0, 0.713, 0, 2.211, 0, -1.458, 0};
+	double lp[] = {0, 0.437, 0, 2.1, 0, -1.028, 0};
+	jp_type graspPos = jp_type(gp);
+	jp_type liftPos = jp_type(lp);
 	blockingMove(wam, graspPos);
 //	sleep(1000);
 	blockingMove(wam, liftPos);
