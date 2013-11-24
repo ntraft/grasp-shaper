@@ -46,7 +46,7 @@ void prepareHand(systems::Wam<DOF>& wam, Hand* hand, char graspType) {
 	}
 }
 
-void grasp(Hand* hand, char graspType) {
+void grasp(Hand* hand) {
 	Hand::jp_type currPos = hand->getInnerLinkPosition();
 	std::cout << "Inner link position: " << currPos << std::endl;
 	currPos = hand->getOuterLinkPosition();
@@ -104,6 +104,7 @@ void graspAndLift(systems::Wam<DOF>& wam, Hand* hand, char graspType) {
 	prepareHand(wam, hand, graspType);
 	wam.moveTo(targetPos);
 	Pause();
+	grasp(hand);
 	liftAndReturn(wam);
 	Pause();
 	ungrasp(hand);
