@@ -29,17 +29,17 @@ void msleep(int ms) {
 }
 
 void grasp(Hand* hand, char graspType) {
-	double vel[] = {0.25, 0.25, 0.25, 0};
+	double vel[] = {0.45, 0.45, 0.45, 0};
 	Hand::jv_type jv = Hand::jv_type(vel);
-	double pos[] = {0.25, 0.25, 0.25, 0};
+	double pos[] = {2.4435, 2.4435, 2.4435, 0};
 	Hand::jp_type jp = Hand::jp_type(pos);
-
 	switch (graspType) {
 	case '\0':
 		hand->close();
 		break;
 	case 'v':
 		hand->velocityMove(jv);
+		while (!hand->doneMoving()) { msleep(10); }
 		break;
 	case 't':
 		hand->trapezoidalMove(jp);
