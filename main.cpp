@@ -15,36 +15,46 @@ using systems::connect;
 using systems::disconnect;
 using systems::reconnect;
 
+#define FINGER_JOINT_LIMIT 2.4435 // = 140 degrees
+#define PI 3.1415
 
-void printMenu() {
-	printf("Commands:\n");
-	printf("  g\tInitiate a grasp\n");
-	printf("  h\tMove to the home position\n");
-	printf("  i\tIdle (release position/orientation constraints)\n");
-	printf("  q\tQuit\n");
-}
-
-void msleep(int ms) {
+void Pause(int ms = 1000) {
 	boost::this_thread::sleep(boost::posix_time::milliseconds(ms));
 }
 
-void grasp(Hand* hand, char graspType) {
-	double vel[] = {0.45, 0.45, 0.45, 0};
-	Hand::jv_type jv = Hand::jv_type(vel);
-	double pos[] = {2.4435, 2.4435, 2.4435, 0};
-	Hand::jp_type jp = Hand::jp_type(pos);
+template<size_t DOF>
+void prepareHand(systems::Wam<DOF>& wam, Hand* hand, char graspType) {
+	Hand::jp_type prism;
+	Hand::jp_type tripod;
+	tripod[3] = 1.05;
+	Hand::jp_type wrap;
+	wrap[3] = PI;
+
 	switch (graspType) {
 	case '\0':
-		hand->close();
-		break;
-	case 'v':
-		hand->velocityMove(jv);
-		while (!hand->doneMoving()) { msleep(10); }
+	case 'g':
+	case 'p':
+	case 'm':
+		hand->trapezoidalMove(prism);
 		break;
 	case 't':
-		hand->trapezoidalMove(jp);
+		hand->trapezoidalMove(tripod);
+		break;
+	case 'w':
+		hand->trapezoidalMove(wrap);
 		break;
 	}
+}
+
+void grasp(Hand* hand, char graspType) {
+	Hand::jp_type currPos = hand->getInnerLinkPosition();
+	std::cout << "Inner link position: " << currPos << std::endl;
+	currPos = hand->getOuterLinkPosition();
+	std::cout << "Outer link position: " << currPos << std::endl;
+	currPos[0] = FINGER_JOINT_LIMIT;
+	currPos[1] = FINGER_JOINT_LIMIT;
+	currPos[2] = FINGER_JOINT_LIMIT;
+	hand->trapezoidalMove(currPos);
 }
 
 void ungrasp(Hand* hand) {
@@ -52,21 +62,58 @@ void ungrasp(Hand* hand) {
 }
 
 template<size_t DOF>
+void liftAndReturn(systems::Wam<DOF>& wam) {
+	// TODO
+}
+
+template<size_t DOF>
 void graspAndLift(systems::Wam<DOF>& wam, Hand* hand, char graspType) {
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
-	double gp[] = {0, 0.713, 0, 2.211, 0, -1.458, 0};
-	double lp[] = {0, 0.437, 0, 2.1, 0, -1.028, 0};
-	jp_type graspPos = jp_type(gp);
-	jp_type liftPos = jp_type(lp);
+	double sp[] = {0, 0.713, 0, 2.211, 0, -1.458, 0}; // TODO edit
+	jp_type safePos = jp_type(sp);
+	double p1[] = {0, 0.713, 0, 2.211, 0, -1.458, 0};
+	jp_type powerPos = jp_type(p1);
+	double p2[] = {0, 0.437, 0, 2.1, 0, -1.028, 0}; // TODO edit
+	jp_type precisionPos = jp_type(p2);
+	double p3[] = {0, 0.437, 0, 2.1, 0, -1.028, 0}; // TODO edit
+	jp_type topDownPos = jp_type(p3);
 
-	wam.moveTo(graspPos);
-	msleep(1000);
-	grasp(hand, graspType);
-	msleep(1000);
-	wam.moveTo(liftPos);
-	msleep(1000);
-	wam.moveTo(graspPos);
+	jp_type targetPos;
+	switch (graspType) {
+	case '\0':
+	case 'g':
+	case 'w':
+		targetPos = powerPos;
+		break;
+	case 'p':
+		targetPos = precisionPos;
+		break;
+	case 'm':
+	case 't':
+		targetPos = topDownPos;
+		break;
+	}
+
+	wam.moveTo(safePos);
+	prepareHand(wam, hand, graspType);
+	wam.moveTo(targetPos);
+	Pause();
+	liftAndReturn(wam);
+	Pause();
 	ungrasp(hand);
+}
+
+void printMenu() {
+	printf("Commands:\n");
+	printf("  g\tInitiate a grasp\n");
+	printf("   \tg\tPower grip [default]\n");
+	printf("   \tp\tPrismatic precision\n");
+	printf("   \tm\tTop-down prismatic\n");
+	printf("   \tt\tTop-down tripod\n");
+	printf("   \tw\tHeavy wrap\n");
+	printf("  h\tMove to the home position\n");
+	printf("  i\tIdle (release position/orientation constraints)\n");
+	printf("  q\tQuit\n");
 }
 
 template<size_t DOF>
@@ -81,8 +128,10 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 	}
 
 	wam.gravityCompensate();
-	msleep(1000);
 	jp_type initPos = wam.getHomePosition();
+	std::cout << "Home position: " << initPos << std::endl;
+	Pause();
+	printf("Initalizing hand\n");
 	initPos[3] = 2.211;
 	wam.moveTo(initPos);
 	hand->initialize();
@@ -100,7 +149,6 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 			break;
 
 		case 'h':
-			std::cout << "Moving to home position: " << wam.getHomePosition() << std::endl;
 			wam.moveHome();
 			break;
 
