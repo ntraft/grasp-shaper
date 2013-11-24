@@ -26,7 +26,7 @@ template<size_t DOF>
 void prepareHand(systems::Wam<DOF>& wam, Hand* hand, char graspType) {
 	Hand::jp_type prism;
 	Hand::jp_type tripod;
-	tripod[3] = 1.05;
+	tripod[3] = 0.52;
 	Hand::jp_type wrap;
 	wrap[3] = PI;
 
@@ -69,13 +69,13 @@ void liftAndReturn(systems::Wam<DOF>& wam) {
 template<size_t DOF>
 void graspAndLift(systems::Wam<DOF>& wam, Hand* hand, char graspType) {
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
-	double sp[] = {0, 0.713, 0, 2.211, 0, -1.458, 0}; // TODO edit
+	double sp[] = {0, 0, 0, 1.57, 0, 0, 0};
 	jp_type safePos = jp_type(sp);
 	double p1[] = {0, 0.713, 0, 2.211, 0, -1.458, 0};
 	jp_type powerPos = jp_type(p1);
-	double p2[] = {0, 0.437, 0, 2.1, 0, -1.028, 0}; // TODO edit
+	double p2[] = {0, 0.651, 0, 2.404, -0.113, -1.458, 0};
 	jp_type precisionPos = jp_type(p2);
-	double p3[] = {0, 0.437, 0, 2.1, 0, -1.028, 0}; // TODO edit
+	double p3[] = {0, 0.705, 0, 1.174, 0, 1.205, 0};
 	jp_type topDownPos = jp_type(p3);
 
 	jp_type targetPos;
