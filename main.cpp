@@ -18,14 +18,13 @@ using systems::reconnect;
 
 void printMenu() {
 	printf("Commands:\n");
-	printf("  [Enter]\tInitiate a grasp\n");
+	printf("  g\t\tInitiate a grasp\n");
 	printf("  h\t\tMove to the home position\n");
 	printf("  i\t\tIdle (release position/orientation constraints)\n");
 	printf("  q\t\tQuit\n");
 }
 
-template<size_t DOF>
-void sleep(unsigned int ms) {
+void msleep(int ms) {
 	boost::this_thread::sleep(boost::posix_time::milliseconds(ms));
 }
 
@@ -46,11 +45,11 @@ void graspAndLift(systems::Wam<DOF>& wam, Hand* hand) {
 	jp_type liftPos = jp_type(lp);
 
 	wam.moveTo(graspPos);
-	sleep(1000);
+	msleep(1000);
 	grasp(hand);
-	sleep(1000);
+	msleep(1000);
 	wam.moveTo(liftPos);
-	sleep(1000);
+	msleep(1000);
 	wam.moveTo(graspPos);
 	ungrasp(hand);
 }
@@ -81,8 +80,12 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 		std::getline(std::cin, line);
 
 		switch (line[0]) {
-		case '\n':
+		case 'g':
 			graspAndLift(wam, hand);
+			break;
+
+		case '\0':
+			printf("It's a null character.\n");
 			break;
 
 		case 'h':
