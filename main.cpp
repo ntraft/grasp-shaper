@@ -54,9 +54,10 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 	std::string line;
 	bool going = true;
 	while (going) {
-		char c = std::getchar();
+		printf(">>> ");
+		std::getline(std::cin, line);
 
-		switch (c) {
+		switch (line[0]) {
 		case '\n':
 			graspAndLift(wam);
 			break;
