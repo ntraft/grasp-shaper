@@ -22,7 +22,7 @@ void Pause(int ms = 1000) {
 	boost::this_thread::sleep(boost::posix_time::milliseconds(ms));
 }
 
-void prepareHand(Hand* hand, char graspType) {
+void prepareHand(Hand& hand, char graspType) {
 	Hand::jp_type prism;
 	Hand::jp_type tripod;
 	tripod[3] = 0.52;
@@ -34,29 +34,29 @@ void prepareHand(Hand* hand, char graspType) {
 	case 'g':
 	case 'p':
 	case 'm':
-		hand->trapezoidalMove(prism);
+		hand.trapezoidalMove(prism);
 		break;
 	case 't':
-		hand->trapezoidalMove(tripod);
+		hand.trapezoidalMove(tripod);
 		break;
 	case 'w':
-		hand->trapezoidalMove(wrap);
+		hand.trapezoidalMove(wrap);
 		break;
 	}
 }
 
-void moveFingersTo(Hand* hand, double newPos) {
-	hand->update();
-	Hand::jp_type currPos = hand->getInnerLinkPosition();
+void moveFingersTo(Hand& hand, double newPos) {
+	hand.update();
+	Hand::jp_type currPos = hand.getInnerLinkPosition();
 	currPos[0] = currPos[1] = currPos[2] = newPos;
-	hand->trapezoidalMove(currPos);
+	hand.trapezoidalMove(currPos);
 }
 
-void grasp(Hand* hand) {
+void grasp(Hand& hand) {
 	moveFingersTo(hand, FINGER_JOINT_LIMIT);
 }
 
-void ungrasp(Hand* hand) {
+void ungrasp(Hand& hand) {
 	moveFingersTo(hand, 0);
 }
 
@@ -72,7 +72,7 @@ void liftAndReturn(systems::Wam<DOF>& wam) {
 }
 
 template<size_t DOF>
-void graspAndLift(systems::Wam<DOF>& wam, Hand* hand, char graspType) {
+void graspAndLift(systems::Wam<DOF>& wam, Hand& hand, char graspType) {
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
 	double p1[] = {0, 0.39, 0, 2.67, 0, -1.6, 0};
 	jp_type inFront = jp_type(p1);
@@ -153,7 +153,7 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 
 		switch (line[0]) {
 		case 'g':
-			graspAndLift(wam, hand, line[1]);
+			graspAndLift(wam, *hand, line[1]);
 			break;
 
 		case 'h':
