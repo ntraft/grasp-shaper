@@ -76,7 +76,7 @@ void graspAndLift(systems::Wam<DOF>& wam, Hand& hand, char graspType) {
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
 	double p1[] = {0, 0.39, 0, 2.67, 0, -1.6, 0};
 	jp_type inFront = jp_type(p1);
-	double p2[] = {0, 0.316, 0, 2.1, 0, -0.93, 0};
+	double p2[] = {0, 0.675, 0, .997, 0, 1.392, 0};
 	jp_type above = jp_type(p2);
 	double p3[] = {0, 0.713, 0, 2.211, 0, -1.458, 0};
 	jp_type powerPos = jp_type(p3);
