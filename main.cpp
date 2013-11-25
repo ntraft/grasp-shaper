@@ -143,13 +143,7 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 	}
 
 	wam.gravityCompensate();
-	jp_type initPos = wam.getHomePosition();
-	std::cout << "Home position: " << initPos << std::endl;
-	Pause();
-	printf("Initalizing hand\n");
-	initPos[3] = 2.211;
-	wam.moveTo(initPos);
-	hand->initialize();
+	std::cout << "Home position: " << wam.getHomePosition() << std::endl;
 	printMenu();
 
 	std::string line;
