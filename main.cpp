@@ -105,15 +105,15 @@ void graspAndLift(systems::Wam<DOF>& wam, Hand* hand, char graspType) {
 		break;
 	}
 
-	wam.moveTo(prepPos, 1.0, 0.5);
+	wam.moveTo(prepPos, 2.0, 2.0);
 	prepareHand(hand, graspType);
-	wam.moveTo(targetPos, 1.0, 0.5);
+	wam.moveTo(targetPos, 2.0, 2.0);
 	Pause();
 	grasp(hand);
 	liftAndReturn(wam);
 	Pause();
 	ungrasp(hand);
-	wam.moveTo(prepPos, 1.0, 0.5);
+	wam.moveTo(prepPos, 2.0, 2.0);
 }
 
 void printMenu() {
