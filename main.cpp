@@ -46,12 +46,30 @@ void prepareHand(systems::Wam<DOF>& wam, Hand* hand, char graspType) {
 	}
 }
 
+void printHandInfo(Hand* hand) {
+	std::cout << "Inner link position: " << hand->getInnerLinkPosition() << std::endl;
+	std::cout << "Outer link position: " << hand->getOuterLinkPosition() << std::endl;
+	std::vector<int> pep = hand->getPrimaryEncoderPosition();
+	std::cout << "Primary encoder position: [";
+	for (int i = 0; i < pep.size(); ++i) {
+		std::cout << pep[i] << ", ";
+	}
+	std::cout << "]\n";
+	std::vector<int> sep = hand->getSecondaryEncoderPosition();
+	std::cout << "Secondary encoder position: [";
+	for (int i = 0; i < sep.size(); ++i) {
+		std::cout << sep[i] << ", ";
+	}
+	std::cout << "]\n";
+}
+
 void moveFingersTo(Hand* hand, double newPos) {
 	// TODO Inner link position, why u no work?
+	printHandInfo(hand);
+	hand->update();
+	printf("Hand sensor update.");
+	printHandInfo(hand);
 	Hand::jp_type currPos = hand->getInnerLinkPosition();
-	std::cout << "Inner link position: " << currPos << std::endl;
-	currPos = hand->getOuterLinkPosition();
-	std::cout << "Outer link position: " << currPos << std::endl;
 	currPos[0] = newPos;
 	currPos[1] = newPos;
 	currPos[2] = newPos;
