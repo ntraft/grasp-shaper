@@ -170,6 +170,7 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 			break;
 
 		case 'p':
+			hand->update();
 			std::cout << "WAM position: " << wam.getJointPositions() << std::endl;
 			std::cout << "Hand position: " << hand->getOuterLinkPosition() << std::endl;
 			break;
