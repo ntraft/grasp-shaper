@@ -46,19 +46,24 @@ void prepareHand(systems::Wam<DOF>& wam, Hand* hand, char graspType) {
 	}
 }
 
-void grasp(Hand* hand) {
+void moveFingersTo(Hand* hand, double newPos) {
+	// TODO Inner link position, why u no work?
 	Hand::jp_type currPos = hand->getInnerLinkPosition();
 	std::cout << "Inner link position: " << currPos << std::endl;
 	currPos = hand->getOuterLinkPosition();
 	std::cout << "Outer link position: " << currPos << std::endl;
-	currPos[0] = FINGER_JOINT_LIMIT;
-	currPos[1] = FINGER_JOINT_LIMIT;
-	currPos[2] = FINGER_JOINT_LIMIT;
+	currPos[0] = newPos;
+	currPos[1] = newPos;
+	currPos[2] = newPos;
 	hand->trapezoidalMove(currPos);
 }
 
+void grasp(Hand* hand) {
+	moveFingersTo(hand, FINGER_JOINT_LIMIT);
+}
+
 void ungrasp(Hand* hand) {
-	hand->open();
+	moveFingersTo(hand, 0);
 }
 
 template<size_t DOF>
