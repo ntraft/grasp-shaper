@@ -76,7 +76,9 @@ template<size_t DOF>
 void graspAndLift(systems::Wam<DOF>& wam, Hand* hand, char graspType) {
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
 	double sp[] = {0, 0, 0, 1.57, 0, 0, 0};
-	jp_type safePos = jp_type(sp);
+	jp_type inFront = jp_type(sp);
+	double sp[] = {0, 0, 0, 1.57, 0, 0, 0};
+	jp_type above = jp_type(sp);
 	double p1[] = {0, 0.713, 0, 2.211, 0, -1.458, 0};
 	jp_type powerPos = jp_type(p1);
 	double p2[] = {0, 0.651, 0, 2.404, -0.113, -1.458, 0};
@@ -84,23 +86,27 @@ void graspAndLift(systems::Wam<DOF>& wam, Hand* hand, char graspType) {
 	double p3[] = {0, 0.705, 0, 1.174, 0, 1.205, 0};
 	jp_type topDownPos = jp_type(p3);
 
+	jp_type prepPos;
 	jp_type targetPos;
 	switch (graspType) {
 	case '\0':
 	case 'g':
 	case 'w':
+		prepPos = inFront;
 		targetPos = powerPos;
 		break;
 	case 'p':
+		prepPos = inFront;
 		targetPos = precisionPos;
 		break;
 	case 'm':
 	case 't':
+		prepPos = above;
 		targetPos = topDownPos;
 		break;
 	}
 
-	wam.moveTo(safePos);
+	wam.moveTo(prepPos);
 	prepareHand(wam, hand, graspType);
 	wam.moveTo(targetPos);
 	Pause();
@@ -108,6 +114,7 @@ void graspAndLift(systems::Wam<DOF>& wam, Hand* hand, char graspType) {
 	liftAndReturn(wam);
 	Pause();
 	ungrasp(hand);
+	wam.moveTo(prepPos);
 }
 
 void printMenu() {
