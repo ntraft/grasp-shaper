@@ -75,16 +75,16 @@ void liftAndReturn(systems::Wam<DOF>& wam) {
 template<size_t DOF>
 void graspAndLift(systems::Wam<DOF>& wam, Hand* hand, char graspType) {
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
-	double sp[] = {0, 0, 0, 1.57, 0, 0, 0};
-	jp_type inFront = jp_type(sp);
-	double sp[] = {0, 0, 0, 1.57, 0, 0, 0};
-	jp_type above = jp_type(sp);
-	double p1[] = {0, 0.713, 0, 2.211, 0, -1.458, 0};
-	jp_type powerPos = jp_type(p1);
-	double p2[] = {0, 0.651, 0, 2.404, -0.113, -1.458, 0};
-	jp_type precisionPos = jp_type(p2);
-	double p3[] = {0, 0.705, 0, 1.174, 0, 1.205, 0};
-	jp_type topDownPos = jp_type(p3);
+	double p1[] = {0, 0, 0, 1.57, 0, 0, 0};
+	jp_type inFront = jp_type(p1);
+	double p2[] = {0, 0, 0, 1.57, 0, 0, 0};
+	jp_type above = jp_type(p2);
+	double p3[] = {0, 0.713, 0, 2.211, 0, -1.458, 0};
+	jp_type powerPos = jp_type(p3);
+	double p4[] = {0, 0.651, 0, 2.404, -0.113, -1.458, 0};
+	jp_type precisionPos = jp_type(p4);
+	double p5[] = {0, 0.705, 0, 1.174, 0, 1.205, 0};
+	jp_type topDownPos = jp_type(p5);
 
 	jp_type prepPos;
 	jp_type targetPos;
@@ -127,6 +127,7 @@ void printMenu() {
 	printf("   \tw\tHeavy wrap\n");
 	printf("  h\tMove to the home position\n");
 	printf("  i\tIdle (release position/orientation constraints)\n");
+	printf("  p\tPrint current joint position\n");
 	printf("  q\tQuit\n");
 }
 
@@ -169,6 +170,11 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 		case 'i':
 			printf("WAM idled.\n");
 			wam.idle();
+			break;
+
+		case 'p':
+			std::cout << "WAM position: " << wam.getJointPositions() << std::endl;
+			std::cout << "Hand position: " << hand->getOuterLinkPosition() << std::endl;
 			break;
 
 		case 'q':
