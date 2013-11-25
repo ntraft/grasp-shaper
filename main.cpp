@@ -120,11 +120,11 @@ void graspAndLift(systems::Wam<DOF>& wam, Hand* hand, char graspType) {
 void printMenu() {
 	printf("Commands:\n");
 	printf("  g\tInitiate a grasp\n");
-	printf("   \tg\tPower grip [default]\n");
-	printf("   \tp\tPrismatic precision\n");
-	printf("   \tm\tTop-down prismatic\n");
-	printf("   \tt\tTop-down tripod\n");
-	printf("   \tw\tHeavy wrap\n");
+	printf("   g\t Power grip [default]\n");
+	printf("   p\t Prismatic precision\n");
+	printf("   m\t Top-down prismatic\n");
+	printf("   t\t Top-down tripod\n");
+	printf("   w\t Heavy wrap\n");
 	printf("  h\tMove to the home position\n");
 	printf("  i\tIdle (release position/orientation constraints)\n");
 	printf("  p\tPrint current joint position\n");
