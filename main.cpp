@@ -183,8 +183,6 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 		}
 	}
 
-
-	wam.idle();
 	pm.getSafetyModule()->waitForMode(SafetyModule::IDLE);
 	return 0;
 }
