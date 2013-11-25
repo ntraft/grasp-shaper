@@ -22,8 +22,7 @@ void Pause(int ms = 1000) {
 	boost::this_thread::sleep(boost::posix_time::milliseconds(ms));
 }
 
-template<size_t DOF>
-void prepareHand(systems::Wam<DOF>& wam, Hand* hand, char graspType) {
+void prepareHand(Hand* hand, char graspType) {
 	Hand::jp_type prism;
 	Hand::jp_type tripod;
 	tripod[3] = 0.52;
@@ -107,7 +106,7 @@ void graspAndLift(systems::Wam<DOF>& wam, Hand* hand, char graspType) {
 	}
 
 	wam.moveTo(prepPos);
-	prepareHand(wam, hand, graspType);
+	prepareHand(hand, graspType);
 	wam.moveTo(targetPos);
 	Pause();
 	grasp(hand);
