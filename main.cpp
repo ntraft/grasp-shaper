@@ -1,4 +1,7 @@
 
+#include "Grasper.h"
+#include "utils.h"
+
 #include <iostream>
 #include <string>
 
@@ -8,113 +11,7 @@
 
 #include <barrett/standard_main_function.h>
 
-
 using namespace barrett;
-using detail::waitForEnter;
-using systems::connect;
-using systems::disconnect;
-using systems::reconnect;
-
-#define FINGER_JOINT_LIMIT 2.4435 // = 140 degrees
-#define PI 3.1415
-
-void Pause(int ms = 1000) {
-	boost::this_thread::sleep(boost::posix_time::milliseconds(ms));
-}
-
-void prepareHand(Hand& hand, char graspType) {
-	Hand::jp_type prism;
-	Hand::jp_type tripod;
-	tripod[3] = 0.52;
-	Hand::jp_type wrap;
-	wrap[3] = PI;
-
-	switch (graspType) {
-	case '\0':
-	case 'g':
-	case 'p':
-	case 'm':
-		hand.trapezoidalMove(prism);
-		break;
-	case 't':
-		hand.trapezoidalMove(tripod);
-		break;
-	case 'w':
-		hand.trapezoidalMove(wrap);
-		break;
-	}
-}
-
-void moveFingersTo(Hand& hand, double newPos) {
-	hand.update();
-	Hand::jp_type currPos = hand.getInnerLinkPosition();
-	currPos[0] = currPos[1] = currPos[2] = newPos;
-	hand.trapezoidalMove(currPos);
-}
-
-void grasp(Hand& hand) {
-	moveFingersTo(hand, FINGER_JOINT_LIMIT);
-}
-
-void ungrasp(Hand& hand) {
-	moveFingersTo(hand, 0);
-}
-
-template<size_t DOF>
-void liftAndReturn(systems::Wam<DOF>& wam) {
-	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
-	jp_type targetPos = wam.getJointPositions();
-	jp_type liftPos = jp_type(targetPos);
-	liftPos[1] -= 0.3;
-	wam.moveTo(liftPos);
-	Pause(2000);
-	wam.moveTo(targetPos);
-}
-
-template<size_t DOF>
-void graspAndLift(systems::Wam<DOF>& wam, Hand& hand, char graspType) {
-	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
-	double p1[] = {0, 0.39, 0, 2.67, 0, -1.6, 0};
-	jp_type inFront = jp_type(p1);
-	double p2[] = {0, 0.675, 0, .997, 0, 1.392, 0};
-	jp_type above = jp_type(p2);
-	double p3[] = {0, 0.713, 0, 2.211, 0, -1.458, 0};
-	jp_type powerPos = jp_type(p3);
-	double p4[] = {0, 0.664, 0, 2.358, 0, -1.515, 0};
-	jp_type precisionPos = jp_type(p4);
-	double p5[] = {0, 0.705, 0, 1.174, 0, 1.205, 0};
-	jp_type topDownPos = jp_type(p5);
-
-	jp_type prepPos;
-	jp_type targetPos;
-	switch (graspType) {
-	case '\0':
-	case 'g':
-	case 'w':
-		prepPos = inFront;
-		targetPos = powerPos;
-		break;
-	case 'p':
-		prepPos = inFront;
-		targetPos = precisionPos;
-		break;
-	case 'm':
-	case 't':
-		prepPos = above;
-		targetPos = topDownPos;
-		break;
-	}
-
-	wam.moveTo(prepPos, 5.0, 5.0);
-	prepareHand(hand, graspType);
-	wam.moveTo(targetPos, 5.0, 5.0);
-	Pause();
-	grasp(hand);
-	liftAndReturn(wam);
-	Pause();
-	ungrasp(hand);
-	wam.moveTo(prepPos, 5.0, 5.0);
-}
 
 void printMenu() {
 	printf("Commands:\n");
@@ -138,9 +35,10 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 		hand = pm.getHand();
 	} else {
 		printf("No hand found! Exiting.");
-		return 0;
+		return 1;
 	}
 
+	Grasper<DOF> grasper(wam, *hand);
 	wam.gravityCompensate();
 	std::cout << "Home position: " << wam.getHomePosition() << std::endl;
 	printMenu();
@@ -153,7 +51,7 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 
 		switch (line[0]) {
 		case 'g':
-			graspAndLift(wam, *hand, line[1]);
+			grasper.doGrasp(line[1]);
 			break;
 
 		case 'h':
