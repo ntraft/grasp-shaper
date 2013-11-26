@@ -38,7 +38,7 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 		return 1;
 	}
 
-	Grasper<DOF> grasper(wam, *hand);
+	Grasper<DOF> grasper(&wam, hand);
 	wam.gravityCompensate();
 	std::cout << "Home position: " << wam.getHomePosition() << std::endl;
 	printMenu();
