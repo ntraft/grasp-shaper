@@ -26,11 +26,11 @@ using namespace barrett;
 #define FINGER_JOINT_LIMIT 2.4435 // = 140 degrees
 #define PI 3.1415
 
-double p1[] = {0, 0.39, 0, 2.67, 0, -1.6, 0};
-double p2[] = {0, 0.675, 0, .997, 0, 1.392, 0};
-double p3[] = {0, 0.713, 0, 2.211, 0, -1.458, 0};
-double p4[] = {0, 0.664, 0, 2.358, 0, -1.515, 0};
-double p5[] = {0, 0.705, 0, 1.174, 0, 1.205, 0};
+double inFrontPos[] = {0, 0.39, 0, 2.67, 0, -1.6, 0};
+double abovePos[] = {0, 0.675, 0, .997, 0, 1.392, 0};
+double powerPos[] = {0, 0.713, 0, 2.211, 0, -1.458, 0};
+double precisionPos[] = {0, 0.664, 0, 2.358, 0, -1.515, 0};
+double topDownPos[] = {0, 0.705, 0, 1.174, 0, 1.205, 0};
 
 template<size_t DOF>
 class Grasper {
@@ -56,9 +56,9 @@ private:
 	// Joint positions
 	jp_type inFront;
 	jp_type above;
-	jp_type powerPos;
-	jp_type precisionPos;
-	jp_type topDownPos;
+	jp_type power;
+	jp_type precision;
+	jp_type topDown;
 	Hand::jp_type prism;
 	Hand::jp_type tripod;
 	Hand::jp_type wrap;
@@ -82,13 +82,13 @@ private:
 template<size_t DOF>
 Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand) :
 	em(em), wam(wam), hand(hand), T_s(em->getPeriod()), time(em),
-	inFront(p1), above(p2), powerPos(p3), precisionPos(p4), topDownPos(p5)
+	inFront(inFrontPos), above(abovePos), power(powerPos), precision(precisionPos), topDown(topDownPos)
 {
-	systems::connect(time.output, dataOutput.template getInput<0>());
-	systems::connect(wam->jpOutput, dataOutput.template getInput<1>());
-
+	logCount = 0;
 	tripod[3] = 0.52;
 	wrap[3] = PI;
+	systems::connect(time.output, dataOutput.template getInput<0>());
+	systems::connect(wam->jpOutput, dataOutput.template getInput<1>());
 }
 
 template<size_t DOF>
@@ -105,7 +105,7 @@ void Grasper<DOF>::startLogging() {
 	}
 
 	// Can't reuse loggers or writers. Have to create new ones for each log file.
-	const size_t RATE = 1;
+	const size_t RATE = 1; // Samples are taken once every (rate*period) seconds.
 	logger = new systems::PeriodicDataLogger<sample>(em, new log::RealTimeWriter<sample>(tmpFile, RATE*T_s), RATE);
 	systems::connect(dataOutput.output, logger->input);
 	time.start();
@@ -120,6 +120,7 @@ void Grasper<DOF>::stopLogging() {
 	logger->closeLog();
 	systems::disconnect(logger->input);
 	time.stop();
+	time.reset();
 	delete logger;
 	logger = NULL;
 
@@ -139,16 +140,16 @@ void Grasper<DOF>::doGrasp(char graspType) {
 	case 'g':
 	case 'w':
 		prepPos = inFront;
-		targetPos = powerPos;
+		targetPos = power;
 		break;
 	case 'p':
 		prepPos = inFront;
-		targetPos = precisionPos;
+		targetPos = precision;
 		break;
 	case 'm':
 	case 't':
 		prepPos = above;
-		targetPos = topDownPos;
+		targetPos = topDown;
 		break;
 	}
 
