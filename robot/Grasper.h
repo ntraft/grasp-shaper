@@ -10,6 +10,8 @@
 
 #include "utils.h"
 
+#include <cstdio>
+
 #include <boost/tuple/tuple.hpp>
 
 #include <barrett/log.h>
@@ -40,7 +42,7 @@ private:
 
     // Data logging
 	unsigned int logCount;
-    char tmpFile[];
+	char tmpFile[14];
     const double T_s;
 	systems::Ramp time;
     systems::TupleGrouper<LOG_DATA_TYPES> dataOutput;
@@ -100,7 +102,7 @@ Grasper<DOF>::~Grasper() {
 
 template<size_t DOF>
 void Grasper<DOF>::startLogging() {
-	tmpFile = "/tmp/btXXXXXX";
+	strcpy(tmpFile, "/tmp/btXXXXXX");
 	if (mkstemp(tmpFile) == -1) {
 		printf("ERROR: Couldn't create temporary file! Nothing will be logged.\n");
 		return;
@@ -123,10 +125,10 @@ void Grasper<DOF>::stopLogging() {
 	systems::disconnect(logger.input);
 	time.stop();
 
-	std::string logFile;
-	sprintf(logFile.c_str(), "logs/dataLog%d.log", logCount++);
+	char *logFile;
+	asprintf(&logFile, "logs/dataLog%d.log", logCount++);
 	log::Reader<sample> reader(tmpFile);
-	reader.exportCSV(logFile.c_str());
+	reader.exportCSV(logFile);
 	std::remove(tmpFile);
 }
 
