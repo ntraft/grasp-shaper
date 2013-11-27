@@ -27,20 +27,21 @@ void printMenu() {
 	printf("  q\tQuit\n");
 }
 
+#define BARRETT_SMF_CONFIGURE_PM
+bool configure_pm(int argc, char** argv, ::barrett::ProductManager& pm) {
+	printf("The WAM is not configured correctly!\n");
+	printf("This program requires a 7-degree WAM, a BarrettHand, and a 6-DOF force/torque sensor.\n");
+	return pm.foundWam7() && pm.foundHand() && pm.foundForceTorqueSensor();
+}
+
 template<size_t DOF>
 int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) {
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
-	Hand* hand;
-	if (pm.foundHand()) {
-		hand = pm.getHand();
-	} else {
-		printf("No hand found! Exiting.");
-		return 1;
-	}
 
+	Hand* hand = pm.getHand();
 	Grasper<DOF> grasper(&wam, hand);
-	wam.gravityCompensate();
 	std::cout << "Home position: " << wam.getHomePosition() << std::endl;
+	wam.gravityCompensate();
 	printMenu();
 
 	std::string line;
