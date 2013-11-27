@@ -83,15 +83,15 @@ Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* 
 	systems::connect(wam->jpOutput, dataOutput.template getInput<1>());
 
 	double p1[] = {0, 0.39, 0, 2.67, 0, -1.6, 0};
-	inFront = jp_type(*p1);
+	inFront = jp_type(p1);
 	double p2[] = {0, 0.675, 0, .997, 0, 1.392, 0};
-	above = jp_type(*p2);
+	above = jp_type(p2);
 	double p3[] = {0, 0.713, 0, 2.211, 0, -1.458, 0};
-	powerPos = jp_type(*p3);
+	powerPos = jp_type(p3);
 	double p4[] = {0, 0.664, 0, 2.358, 0, -1.515, 0};
-	precisionPos = jp_type(*p4);
+	precisionPos = jp_type(p4);
 	double p5[] = {0, 0.705, 0, 1.174, 0, 1.205, 0};
-	topDownPos = jp_type(*p5);
+	topDownPos = jp_type(p5);
 	tripod[3] = 0.52;
 	wrap[3] = PI;
 }
