@@ -2,9 +2,6 @@
 #include "Grasper.h"
 #include "utils.h"
 
-#include <iostream>
-#include <string>
-
 #include <barrett/units.h>
 #include <barrett/systems.h>
 #include <barrett/products/product_manager.h>
