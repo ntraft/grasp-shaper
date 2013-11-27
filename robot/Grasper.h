@@ -10,6 +10,9 @@
 
 #include "utils.h"
 
+#include <boost/tuple/tuple.hpp>
+
+#include <barrett/log.h>
 #include <barrett/units.h>
 #include <barrett/systems.h>
 #include <barrett/products/product_manager.h>
@@ -21,15 +24,29 @@ using namespace barrett;
 #define FINGER_JOINT_LIMIT 2.4435 // = 140 degrees
 #define PI 3.1415
 
+
 template<size_t DOF>
 class Grasper {
 
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
+	#define LOG_DATA_TYPES double, jp_type
+	typedef boost::tuple<LOG_DATA_TYPES> sample;
 
 private:
+	// Robotic systems
+	systems::RealTimeExecutionManager* em;
 	systems::Wam<DOF>* wam;
 	Hand* hand;
 
+    // Data logging
+	unsigned int logCount;
+    char tmpFile[];
+    const double T_s;
+	systems::Ramp time;
+    systems::TupleGrouper<LOG_DATA_TYPES> dataOutput;
+	systems::PeriodicDataLogger<sample> logger;
+
+	// Joint positions
 	jp_type inFront;
 	jp_type above;
 	jp_type powerPos;
@@ -40,12 +57,14 @@ private:
 	Hand::jp_type wrap;
 
 public:
-	Grasper(systems::Wam<DOF>* wam, Hand* hand);
+	Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand);
 	virtual ~Grasper();
 
 	void doGrasp(char graspType);
 
 private:
+	void startLogging();
+	void stopLogging();
 	void prepareHand(char graspType);
 	void grasp();
 	void ungrasp();
@@ -54,9 +73,12 @@ private:
 };
 
 template<size_t DOF>
-Grasper<DOF>::Grasper(systems::Wam<DOF>* wam, Hand* hand) {
-	this->wam = wam;
-	this->hand = hand;
+Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand) :
+	em(em), wam(wam), hand(hand), T_s(em->getPeriod()), time(em),
+	logger(em, new log::RealTimeWriter<sample>(tmpFile, T_s), 1)
+{
+	systems::connect(time.output, dataOutput.template getInput<0>());
+	systems::connect(wam->jpOutput, dataOutput.template getInput<1>());
 
 	double p1[] = {0, 0.39, 0, 2.67, 0, -1.6, 0};
 	inFront(*p1);
@@ -74,6 +96,38 @@ Grasper<DOF>::Grasper(systems::Wam<DOF>* wam, Hand* hand) {
 
 template<size_t DOF>
 Grasper<DOF>::~Grasper() {
+}
+
+template<size_t DOF>
+void Grasper<DOF>::startLogging() {
+	tmpFile = "/tmp/btXXXXXX";
+	if (mkstemp(tmpFile) == -1) {
+		printf("ERROR: Couldn't create temporary file! Nothing will be logged.\n");
+		return;
+	}
+
+	// Can't reuse loggers or writers. Have to create new ones for each log file.
+	const size_t RATE = 1;
+	systems::PeriodicDataLogger<sample> logger(em, new log::RealTimeWriter<sample>(tmpFile, RATE*T_s), RATE);
+	systems::connect(dataOutput.output, logger.input);
+	time.start();
+}
+
+template<size_t DOF>
+void Grasper<DOF>::stopLogging() {
+	if (!logger.isLogging()) {
+		return;
+	}
+
+	logger.closeLog();
+	systems::disconnect(logger.input);
+	time.stop();
+
+	std::string logFile;
+	sprintf(logFile.c_str(), "logs/dataLog%d.log", logCount++);
+	log::Reader<sample> reader(tmpFile);
+	reader.exportCSV(logFile.c_str());
+	std::remove(tmpFile);
 }
 
 template<size_t DOF>
@@ -100,6 +154,7 @@ void Grasper<DOF>::doGrasp(char graspType) {
 
 	wam->moveTo(prepPos, 5.0, 5.0);
 	prepareHand(graspType);
+	startLogging();
 	wam->moveTo(targetPos, 5.0, 5.0);
 	Pause();
 	grasp();
@@ -107,6 +162,7 @@ void Grasper<DOF>::doGrasp(char graspType) {
 	Pause();
 	ungrasp();
 	wam->moveTo(prepPos, 5.0, 5.0);
+	stopLogging();
 }
 
 template<size_t DOF>
