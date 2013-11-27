@@ -51,7 +51,7 @@ private:
     const double T_s;
 	systems::Ramp time;
     systems::TupleGrouper<LOG_DATA_TYPES> dataOutput;
-	systems::PeriodicDataLogger<sample> logger;
+	systems::PeriodicDataLogger<sample>* logger;
 
 	// Joint positions
 	jp_type inFront;
@@ -82,7 +82,6 @@ private:
 template<size_t DOF>
 Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand) :
 	em(em), wam(wam), hand(hand), T_s(em->getPeriod()), time(em),
-	logger(em, new log::RealTimeWriter<sample>(tmpFile, T_s), 1),
 	inFront(p1), above(p2), powerPos(p3), precisionPos(p4), topDownPos(p5)
 {
 	systems::connect(time.output, dataOutput.template getInput<0>());
@@ -94,6 +93,7 @@ Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* 
 
 template<size_t DOF>
 Grasper<DOF>::~Grasper() {
+	delete logger;
 }
 
 template<size_t DOF>
@@ -106,20 +106,22 @@ void Grasper<DOF>::startLogging() {
 
 	// Can't reuse loggers or writers. Have to create new ones for each log file.
 	const size_t RATE = 1;
-	systems::PeriodicDataLogger<sample> logger(em, new log::RealTimeWriter<sample>(tmpFile, RATE*T_s), RATE);
-	systems::connect(dataOutput.output, logger.input);
+	logger = new systems::PeriodicDataLogger<sample>(em, new log::RealTimeWriter<sample>(tmpFile, RATE*T_s), RATE);
+	systems::connect(dataOutput.output, logger->input);
 	time.start();
 }
 
 template<size_t DOF>
 void Grasper<DOF>::stopLogging() {
-	if (!logger.isLogging()) {
+	if (logger == NULL) {
 		return;
 	}
 
-	logger.closeLog();
-	systems::disconnect(logger.input);
+	logger->closeLog();
+	systems::disconnect(logger->input);
 	time.stop();
+	delete logger;
+	logger = NULL;
 
 	char *logFile;
 	asprintf(&logFile, "logs/dataLog%d.log", logCount++);
@@ -152,7 +154,7 @@ void Grasper<DOF>::doGrasp(char graspType) {
 
 	wam->moveTo(prepPos, 5.0, 5.0);
 	prepareHand(graspType);
-//	startLogging();
+	startLogging();
 	wam->moveTo(targetPos, 5.0, 5.0);
 	Pause();
 	grasp();
@@ -160,7 +162,7 @@ void Grasper<DOF>::doGrasp(char graspType) {
 	Pause();
 	ungrasp();
 	wam->moveTo(prepPos, 5.0, 5.0);
-//	stopLogging();
+	stopLogging();
 }
 
 template<size_t DOF>
