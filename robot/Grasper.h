@@ -38,7 +38,7 @@ class Grasper {
 
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
 	typedef typename std::vector<TactilePuck::v_type> tactile_data;
-	#define LOG_DATA_TYPES double, jp_type//, double
+	#define LOG_DATA_TYPES double, jp_type, double
 	typedef boost::tuple<LOG_DATA_TYPES> sample;
 
 private:
@@ -53,6 +53,7 @@ private:
     const double T_s;
 	systems::Ramp time;
     systems::TupleGrouper<LOG_DATA_TYPES> dataOutput;
+    TactileOutput tactOut;
 	systems::PeriodicDataLogger<sample>* logger;
 
 	// Joint positions
@@ -83,7 +84,7 @@ private:
 
 template<size_t DOF>
 Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand) :
-	em(em), wam(wam), hand(hand), T_s(em->getPeriod()), time(em), logger(NULL),
+	em(em), wam(wam), hand(hand), T_s(em->getPeriod()), time(em), logger(NULL), tactOut(19.0),
 	inFront(inFrontPos), above(abovePos), power(powerPos), precision(precisionPos), topDown(topDownPos)
 {
 	logCount = 0;
@@ -95,8 +96,7 @@ Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* 
 	if (hand->hasTactSensors()) {
 //		std::vector<TactilePuck*> tps = hand->getTactilePucks();
 //		systems::SingleOutput<tactile_data> tactOut;
-//		TactileOutput tactOut(19);
-//		systems::connect(tactOut.output, dataOutput.template getInput<2>());
+		systems::connect(tactOut.output, dataOutput.template getInput<2>());
 		// Each puck has 24 sensors, each sensor has a pressure.
 		// How to marshall these into csv format? Or into a single tuple?
 		// How is jp_type marshalled; because it has 7 values, not just one.
