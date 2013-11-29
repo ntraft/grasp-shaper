@@ -62,6 +62,7 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 		case 'i':
 			printf("WAM idled.\n");
 			wam.idle();
+            hand->idle();
 			break;
 
 		case 'p':
