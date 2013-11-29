@@ -24,7 +24,10 @@ public:
 	virtual ~TactileOutput() { mandatoryCleanUp(); }
 
 protected:
-	virtual void operate() { operated++; }
+	virtual void operate() {
+		data += 1;
+		outputValue->setData(&data);
+	}
 	virtual void invalidateOutputs() { /* do nothing */ }
 
 	double data;

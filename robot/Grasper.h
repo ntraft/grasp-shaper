@@ -38,7 +38,7 @@ class Grasper {
 
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
 	typedef typename std::vector<TactilePuck::v_type> tactile_data;
-	#define LOG_DATA_TYPES double, jp_type, double
+	#define LOG_DATA_TYPES double, jp_type//, double
 	typedef boost::tuple<LOG_DATA_TYPES> sample;
 
 private:
@@ -93,10 +93,10 @@ Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* 
 	systems::connect(time.output, dataOutput.template getInput<0>());
 	systems::connect(wam->jpOutput, dataOutput.template getInput<1>());
 	if (hand->hasTactSensors()) {
-		std::vector<TactilePuck*> tps = hand->getTactilePucks();
+//		std::vector<TactilePuck*> tps = hand->getTactilePucks();
 //		systems::SingleOutput<tactile_data> tactOut;
-		TactileOutput tactOut(19);
-		systems::connect(tactOut.output, dataOutput.template getInput<2>());
+//		TactileOutput tactOut(19);
+//		systems::connect(tactOut.output, dataOutput.template getInput<2>());
 		// Each puck has 24 sensors, each sensor has a pressure.
 		// How to marshall these into csv format? Or into a single tuple?
 		// How is jp_type marshalled; because it has 7 values, not just one.
