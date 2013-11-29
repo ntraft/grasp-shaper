@@ -9,6 +9,7 @@
 #define GRASPER_H_
 
 #include "utils.h"
+#include "tactile_output.h"
 
 #include <cstdio>
 
@@ -36,7 +37,8 @@ template<size_t DOF>
 class Grasper {
 
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
-	#define LOG_DATA_TYPES double, jp_type
+	typedef typename std::vector<TactilePuck::v_type> tactile_data;
+	#define LOG_DATA_TYPES double, jp_type, double
 	typedef boost::tuple<LOG_DATA_TYPES> sample;
 
 private:
@@ -81,14 +83,26 @@ private:
 
 template<size_t DOF>
 Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand) :
-	em(em), wam(wam), hand(hand), T_s(em->getPeriod()), time(em),
+	em(em), wam(wam), hand(hand), T_s(em->getPeriod()), time(em), logger(NULL),
 	inFront(inFrontPos), above(abovePos), power(powerPos), precision(precisionPos), topDown(topDownPos)
 {
 	logCount = 0;
 	tripod[3] = 0.52;
 	wrap[3] = PI;
+
 	systems::connect(time.output, dataOutput.template getInput<0>());
 	systems::connect(wam->jpOutput, dataOutput.template getInput<1>());
+	if (hand->hasTactSensors()) {
+		std::vector<TactilePuck*> tps = hand->getTactilePucks();
+//		systems::SingleOutput<tactile_data> tactOut;
+		TactileOutput tactOut(19);
+		systems::connect(tactOut.output, dataOutput.template getInput<2>());
+		// Each puck has 24 sensors, each sensor has a pressure.
+		// How to marshall these into csv format? Or into a single tuple?
+		// How is jp_type marshalled; because it has 7 values, not just one.
+		// Also how to call hand->update() each time?
+//		tps[0]->getFullData();
+	}
 }
 
 template<size_t DOF>
@@ -98,6 +112,11 @@ Grasper<DOF>::~Grasper() {
 
 template<size_t DOF>
 void Grasper<DOF>::startLogging() {
+	if (logger != NULL) {
+		printf("ERROR: Already logging!");
+		return;
+	}
+
 	strcpy(tmpFile, "/tmp/btXXXXXX");
 	if (mkstemp(tmpFile) == -1) {
 		printf("ERROR: Couldn't create temporary file! Nothing will be logged.\n");
