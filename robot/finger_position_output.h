@@ -19,7 +19,7 @@ using namespace barrett::systems;
 
 class FingerPositionOutput : public System, public SingleOutput<Hand::jp_type> {
 public:
-	explicit FingerPositionOutput(Hand* hand, const std::string& sysName = "TactileOutput") :
+	explicit FingerPositionOutput(Hand* hand, const std::string& sysName = "FingerPositionOutput") :
 		System(sysName), SingleOutput<Hand::jp_type>(this), hand(hand) { }
 	virtual ~FingerPositionOutput() { mandatoryCleanUp(); }
 
