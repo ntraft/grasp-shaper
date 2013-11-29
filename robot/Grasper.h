@@ -117,7 +117,7 @@ void Grasper<DOF>::startLogging() {
 	}
 
 	// Can't reuse loggers or writers. Have to create new ones for each log file.
-	const size_t RATE = 1; // Samples are taken once every (rate*period) seconds.
+	const size_t RATE = 50; // Samples are taken once every (rate*period) seconds.
 	logger = new systems::PeriodicDataLogger<sample>(em, new log::RealTimeWriter<sample>(tmpFile, RATE*T_s), RATE);
 	systems::connect(dataOutput.output, logger->input);
 	time.start();
