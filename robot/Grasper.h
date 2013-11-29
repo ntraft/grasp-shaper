@@ -81,7 +81,7 @@ private:
 
 template<size_t DOF>
 Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand) :
-	em(em), wam(wam), hand(hand), T_s(em->getPeriod()), time(em), tactOut(), logger(NULL),
+	em(em), wam(wam), hand(hand), T_s(em->getPeriod()), time(em), tactOut(hand->getTactilePucks()), logger(NULL),
 	inFront(inFrontPos), above(abovePos), power(powerPos), precision(precisionPos), topDown(topDownPos)
 {
 	logCount = 0;
@@ -90,12 +90,7 @@ Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* 
 
 	systems::connect(time.output, dataOutput.template getInput<0>());
 	systems::connect(wam->jpOutput, dataOutput.template getInput<1>());
-	if (hand->hasTactSensors()) {
-//		std::vector<TactilePuck*> tps = hand->getTactilePucks();
-//		systems::SingleOutput<tactile_data> tactOut;
-		systems::connect(tactOut.output, dataOutput.template getInput<2>());
-//		tps[0]->getFullData();
-	}
+	systems::connect(tactOut.output, dataOutput.template getInput<2>());
 }
 
 template<size_t DOF>

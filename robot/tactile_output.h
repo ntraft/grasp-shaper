@@ -22,8 +22,8 @@ typedef math::Matrix<4, TactilePuck::NUM_SENSORS, double> tactile_data;
 
 class TactileOutput : public System, public SingleOutput<tactile_data> {
 public:
-	explicit TactileOutput(const std::string& sysName = "TactileOutput") :
-		System(sysName), SingleOutput<tactile_data>(this), data(19.0)
+	explicit TactileOutput(std::vector<TactilePuck*> sensors, const std::string& sysName = "TactileOutput") :
+		System(sysName), SingleOutput<tactile_data>(this), sensors(sensors)
 	{
 		this->outputValue->setData(&data);
 	}
@@ -31,10 +31,14 @@ public:
 
 protected:
 	virtual void operate() {
-		outputValue->setData(&data);
+		for (unsigned int i = 0; i < sensors.size(); ++i) {
+			sensors[i]->updateFull(true);
+			data.row(i) = sensors[i]->getFullData();
+		}
 	}
 	virtual void invalidateOutputs() { /* do nothing */ }
 
+	std::vector<TactilePuck*> sensors;
 	tactile_data data;
 
 private:
