@@ -9,6 +9,7 @@
 #define GRASPER_H_
 
 #include "utils.h"
+#include "finger_position_output.h"
 #include "tactile_output.h"
 
 #include <cstdio>
@@ -35,7 +36,7 @@ template<size_t DOF>
 class Grasper {
 
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
-	#define LOG_DATA_TYPES double, jp_type, tactile_data
+	#define LOG_DATA_TYPES double, jp_type, Hand::jp_type, tactile_data
 	typedef boost::tuple<LOG_DATA_TYPES> sample;
 
 private:
@@ -50,6 +51,7 @@ private:
     const double T_s;
 	systems::Ramp time;
     systems::TupleGrouper<LOG_DATA_TYPES> dataOutput;
+    FingerPositionOutput fingerPosOut;
     TactileOutput tactOut;
 	systems::PeriodicDataLogger<sample>* logger;
 
@@ -81,7 +83,8 @@ private:
 
 template<size_t DOF>
 Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand) :
-	em(em), wam(wam), hand(hand), T_s(em->getPeriod()), time(em), tactOut(hand->getTactilePucks()), logger(NULL),
+	em(em), wam(wam), hand(hand), T_s(em->getPeriod()), time(em),
+	fingerPosOut(hand), tactOut(hand->getTactilePucks()), logger(NULL),
 	inFront(inFrontPos), above(abovePos), power(powerPos), precision(precisionPos), topDown(topDownPos)
 {
 	logCount = 0;
@@ -90,7 +93,8 @@ Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* 
 
 	systems::connect(time.output, dataOutput.template getInput<0>());
 	systems::connect(wam->jpOutput, dataOutput.template getInput<1>());
-	systems::connect(tactOut.output, dataOutput.template getInput<2>());
+	systems::connect(fingerPosOut.output, dataOutput.template getInput<2>());
+	systems::connect(tactOut.output, dataOutput.template getInput<3>());
 }
 
 template<size_t DOF>
