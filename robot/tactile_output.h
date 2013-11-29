@@ -18,7 +18,7 @@
 using namespace barrett;
 using namespace barrett::systems;
 
-typedef math::Matrix<5, TactilePuck::NUM_SENSORS, double> tactile_data;
+typedef math::Matrix<4, TactilePuck::NUM_SENSORS, double> tactile_data;
 
 class TactileOutput : public System, public SingleOutput<tactile_data> {
 public:
