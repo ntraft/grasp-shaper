@@ -36,7 +36,7 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
 
 	Hand* hand = pm.getHand();
-	Grasper<DOF> grasper(pm.getExecutionManager(), &wam, hand);
+	Grasper<DOF> grasper(pm.getExecutionManager(), &wam, hand, pm.getForceTorqueSensor());
 	std::cout << "Home position: " << wam.getHomePosition() << std::endl;
 	wam.gravityCompensate();
 	printMenu();

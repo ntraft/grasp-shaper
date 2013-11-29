@@ -11,6 +11,7 @@
 #include "utils.h"
 #include "finger_position_output.h"
 #include "fingertip_torque_output.h"
+#include "force_torque_output.h"
 #include "tactile_output.h"
 
 #include <cstdio>
@@ -37,7 +38,7 @@ template<size_t DOF>
 class Grasper {
 
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
-	#define LOG_DATA_TYPES double, jp_type, Hand::jp_type, finger_torques, tactile_data
+	#define LOG_DATA_TYPES double, jp_type, Hand::jp_type, finger_torques, cf_type, tactile_data
 	typedef boost::tuple<LOG_DATA_TYPES> sample;
 
 private:
@@ -45,6 +46,7 @@ private:
 	systems::RealTimeExecutionManager* em;
 	systems::Wam<DOF>* wam;
 	Hand* hand;
+	ForceTorqueSensor* ftSensor;
 
     // Data logging
 	unsigned int logCount;
@@ -54,6 +56,7 @@ private:
     systems::TupleGrouper<LOG_DATA_TYPES> dataOutput;
     FingerPositionOutput fingerPosOut;
     FingertipTorqueOutput fingerTorqueOut;
+    ForceTorqueOutput forceTorqueOut;
     TactileOutput tactOut;
 	systems::PeriodicDataLogger<sample>* logger;
 
@@ -68,7 +71,7 @@ private:
 	Hand::jp_type wrap;
 
 public:
-	Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand);
+	Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand, ForceTorqueSensor* ftSensor);
 	virtual ~Grasper();
 
 	void doGrasp(char graspType);
@@ -84,9 +87,9 @@ private:
 };
 
 template<size_t DOF>
-Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand) :
-	em(em), wam(wam), hand(hand), T_s(em->getPeriod()), time(em),
-	fingerPosOut(hand), fingerTorqueOut(hand), tactOut(hand->getTactilePucks()), logger(NULL),
+Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand, ForceTorqueSensor* ftSensor) :
+	em(em), wam(wam), hand(hand), ftSensor(ftSensor), T_s(em->getPeriod()), time(em),
+	fingerPosOut(hand), fingerTorqueOut(hand), forceTorqueOut(ftSensor), tactOut(hand->getTactilePucks()), logger(NULL),
 	inFront(inFrontPos), above(abovePos), power(powerPos), precision(precisionPos), topDown(topDownPos)
 {
 	logCount = 0;
@@ -97,7 +100,8 @@ Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* 
 	systems::connect(wam->jpOutput, dataOutput.template getInput<1>());
 	systems::connect(fingerPosOut.output, dataOutput.template getInput<2>());
 	systems::connect(fingerTorqueOut.output, dataOutput.template getInput<3>());
-	systems::connect(tactOut.output, dataOutput.template getInput<4>());
+	systems::connect(forceTorqueOut.output, dataOutput.template getInput<4>());
+	systems::connect(tactOut.output, dataOutput.template getInput<5>());
 }
 
 template<size_t DOF>
