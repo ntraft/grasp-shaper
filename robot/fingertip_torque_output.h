@@ -18,7 +18,7 @@
 using namespace barrett;
 using namespace barrett::systems;
 
-typedef math::Vector<4, int>::type finger_torques;
+typedef math::Vector<Hand::DOF, int>::type finger_torques;
 
 class FingertipTorqueOutput : public System, public SingleOutput<finger_torques> {
 public:
