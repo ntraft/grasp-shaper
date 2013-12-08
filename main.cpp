@@ -20,6 +20,9 @@ void printMenu() {
 	printf("   w\t Heavy wrap\n");
 	printf("  h\tMove to the home position\n");
 	printf("  i\tIdle (release position/orientation constraints)\n");
+	printf("  r\tReset hand (make sure it has room!)\n");
+	printf("  o\tOpen hand\n");
+	printf("  c\tClose hand\n");
 	printf("  p\tPrint current joint position\n");
 	printf("  q\tQuit\n");
 }
@@ -63,6 +66,21 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 			printf("WAM idled.\n");
 			wam.idle();
             hand->idle();
+			break;
+
+		case 'r':
+			printf("Initializing hand.\n");
+			hand->initialize();
+			break;
+
+		case 'o':
+			printf("Opening hand.\n");
+			hand->open();
+			break;
+
+		case 'c':
+			printf("Closing hand.\n");
+			hand->close();
 			break;
 
 		case 'p':
