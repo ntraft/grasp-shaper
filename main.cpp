@@ -2,6 +2,8 @@
 #include "Grasper.h"
 #include "utils.h"
 
+#include <curses.h>
+
 #include <barrett/units.h>
 #include <barrett/systems.h>
 #include <barrett/products/product_manager.h>
@@ -11,7 +13,7 @@
 using namespace barrett;
 
 void printMenu() {
-	printf("Commands:\n");
+	printw("Commands:\n");
 	printf("  g\tInitiate a grasp\n");
 	printf("   g\t Power grip [default]\n");
 	printf("   p\t Prismatic precision\n");
