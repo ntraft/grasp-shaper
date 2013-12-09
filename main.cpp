@@ -48,7 +48,7 @@ template<int R, typename Units>
 const char* toString(const math::Matrix<R,1, Units>& dest) {
 	std::stringstream to;
 	for (size_t i = 1; i < R; ++i) {
-		to << dest[i];
+		to << double(dest[i]);
 	}
 	return to.str().c_str();
 }
@@ -112,8 +112,8 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 
 		case 'j':
 			hand->update();
-			printlog("WAM position: ", toString(wam.getJointPositions()));
-			printlog("Hand position: ", toString(hand->getOuterLinkPosition()));
+			printlog("WAM position: %s\n", toString(wam.getJointPositions()));
+			printlog("Hand position: %s\n", toString(hand->getOuterLinkPosition()));
 			break;
 
 		case 'q':
