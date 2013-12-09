@@ -8,25 +8,15 @@
 #ifndef GRASPER_H_
 #define GRASPER_H_
 
-#include "utils.h"
-#include "finger_position_output.h"
-#include "fingertip_torque_output.h"
-#include "force_torque_output.h"
-#include "tactile_output.h"
+#include "grasp_thread.h"
 
-#include <cstdio>
+#include <boost/thread.hpp>
 
-#include <boost/tuple/tuple.hpp>
-
-#include <barrett/log.h>
 #include <barrett/units.h>
 #include <barrett/systems.h>
 #include <barrett/products/product_manager.h>
 
 using namespace barrett;
-
-#define FINGER_JOINT_LIMIT 2.4435 // = 140 degrees
-#define PI 3.1415
 
 double inFrontPos[] = {0, 0.39, 0, 2.67, 0, -1.6, 0};
 double abovePos[] = {0, 0.675, 0, .997, 0, 1.392, 0};
@@ -48,17 +38,14 @@ private:
 	Hand* hand;
 	ForceTorqueSensor* ftSensor;
 
-    // Data logging
+	// Grasp tracking
 	unsigned int logCount;
-	char tmpFile[14];
-    const double T_s;
-	systems::Ramp time;
-    systems::TupleGrouper<LOG_DATA_TYPES> dataOutput;
-    FingerPositionOutput fingerPosOut;
-    FingertipTorqueOutput fingerTorqueOut;
-    ForceTorqueOutput forceTorqueOut;
-    TactileOutput tactOut;
-	systems::PeriodicDataLogger<sample>* logger;
+	char currGrasp;
+	boost::thread* threadRunner;
+	GraspThread<DOF>* graspThread;
+	jp_type prepPos;
+	jp_type targetPos;
+	Hand::jp_type handPrepPos;
 
 	// Joint positions
 	jp_type inFront;
@@ -75,11 +62,15 @@ public:
 	virtual ~Grasper();
 
 	void doGrasp(char graspType);
+	void failedGrasp();
+	void halt();
 
 private:
 	void startLogging();
 	void stopLogging();
+	void setPositions(char graspType);
 	void prepareHand(char graspType);
+	void move(jp_type& dest);
 	void grasp();
 	void ungrasp();
 	void moveFingersTo(double newPos);
@@ -88,73 +79,54 @@ private:
 
 template<size_t DOF>
 Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand, ForceTorqueSensor* ftSensor) :
-	em(em), wam(wam), hand(hand), ftSensor(ftSensor), T_s(em->getPeriod()), time(em),
-	fingerPosOut(hand), fingerTorqueOut(hand), forceTorqueOut(ftSensor), tactOut(hand->getTactilePucks()), logger(NULL),
+	em(em), wam(wam), hand(hand), ftSensor(ftSensor),
+	logCount(0), currGrasp('\0'), threadRunner(NULL), graspThread(NULL),
+	prepPos(inFrontPos), targetPos(powerPos), handPrepPos(prism),
 	inFront(inFrontPos), above(abovePos), power(powerPos), precision(precisionPos), topDown(topDownPos)
 {
-	logCount = 0;
 	tripod[3] = 0.52;
 	wrap[3] = PI;
-
-	systems::connect(time.output, dataOutput.template getInput<0>());
-	systems::connect(wam->jpOutput, dataOutput.template getInput<1>());
-	systems::connect(fingerPosOut.output, dataOutput.template getInput<2>());
-	systems::connect(fingerTorqueOut.output, dataOutput.template getInput<3>());
-	systems::connect(forceTorqueOut.output, dataOutput.template getInput<4>());
-	systems::connect(tactOut.output, dataOutput.template getInput<5>());
 }
 
 template<size_t DOF>
 Grasper<DOF>::~Grasper() {
-	delete logger;
-}
-
-template<size_t DOF>
-void Grasper<DOF>::startLogging() {
-	if (logger != NULL) {
-		printf("ERROR: Already logging!");
-		return;
-	}
-
-	strcpy(tmpFile, "/tmp/btXXXXXX");
-	if (mkstemp(tmpFile) == -1) {
-		printf("ERROR: Couldn't create temporary file! Nothing will be logged.\n");
-		return;
-	}
-
-	// Can't reuse loggers or writers. Have to create new ones for each log file.
-	const size_t RATE = 50; // Samples are taken once every (rate*period) seconds.
-	logger = new systems::PeriodicDataLogger<sample>(em, new log::RealTimeWriter<sample>(tmpFile, RATE*T_s), RATE);
-	systems::connect(dataOutput.output, logger->input);
-	time.start();
-}
-
-template<size_t DOF>
-void Grasper<DOF>::stopLogging() {
-	if (logger == NULL) {
-		return;
-	}
-
-	logger->closeLog();
-	systems::disconnect(logger->input);
-	time.stop();
-	time.reset();
-	delete logger;
-	logger = NULL;
-
-	char *logFile;
-	asprintf(&logFile, "logs/dataLog%d.log", logCount++);
-	log::Reader<sample> reader(tmpFile);
-	reader.exportCSV(logFile);
-	std::remove(tmpFile);
+	halt();
 }
 
 template<size_t DOF>
 void Grasper<DOF>::doGrasp(char graspType) {
-	jp_type prepPos;
-	jp_type targetPos;
+	setPositions(graspType);
+	currGrasp = graspType;
+	graspThread = new GraspThread<DOF>(em, wam, hand, ftSensor, &logCount,
+			currGrasp, prepPos, targetPos, handPrepPos);
+	threadRunner = new boost::thread(graspEntryPoint<DOF>, graspThread);
+}
+
+template<size_t DOF>
+void Grasper<DOF>::halt() {
+	if (threadRunner != NULL) {
+		threadRunner->interrupt();
+		threadRunner->join();
+		delete threadRunner;
+		threadRunner = NULL;
+		delete graspThread;
+		graspThread = NULL;
+	}
+}
+
+template<size_t DOF>
+void Grasper<DOF>::failedGrasp() {
+	currGrasp = '\0';
+	if (graspThread != NULL) {
+		graspThread->failedGrasp();
+	}
+	halt();
+	wam->moveTo(prepPos, false);
+}
+
+template<size_t DOF>
+void Grasper<DOF>::setPositions(char graspType) {
 	switch (graspType) {
-	case '\0':
 	case 'g':
 	case 'w':
 		prepPos = inFront;
@@ -169,65 +141,23 @@ void Grasper<DOF>::doGrasp(char graspType) {
 		prepPos = above;
 		targetPos = topDown;
 		break;
+	default:
+		throw 1;
+		return;
 	}
-
-	wam->moveTo(prepPos, 5.0, 5.0);
-	prepareHand(graspType);
-	startLogging();
-	wam->moveTo(targetPos, 5.0, 5.0);
-	Pause();
-	grasp();
-	liftAndReturn();
-	Pause();
-	ungrasp();
-	wam->moveTo(prepPos, 5.0, 5.0);
-	stopLogging();
-}
-
-template<size_t DOF>
-void Grasper<DOF>::prepareHand(char graspType) {
 	switch (graspType) {
-	case '\0':
 	case 'g':
 	case 'p':
 	case 'm':
-		hand->trapezoidalMove(prism);
+		handPrepPos = prism;
 		break;
 	case 't':
-		hand->trapezoidalMove(tripod);
+		handPrepPos = tripod;
 		break;
 	case 'w':
-		hand->trapezoidalMove(wrap);
+		handPrepPos = wrap;
 		break;
 	}
-}
-
-template<size_t DOF>
-void Grasper<DOF>::grasp() {
-	moveFingersTo(FINGER_JOINT_LIMIT);
-}
-
-template<size_t DOF>
-void Grasper<DOF>::ungrasp() {
-	moveFingersTo(0);
-}
-
-template<size_t DOF>
-void Grasper<DOF>::moveFingersTo(double newPos) {
-	hand->update();
-	Hand::jp_type currPos = hand->getInnerLinkPosition();
-	currPos[0] = currPos[1] = currPos[2] = newPos;
-	hand->trapezoidalMove(currPos);
-}
-
-template<size_t DOF>
-void Grasper<DOF>::liftAndReturn() {
-	jp_type targetPos = wam->getJointPositions();
-	jp_type liftPos(targetPos);
-	liftPos[1] -= 0.3;
-	wam->moveTo(liftPos);
-	Pause(2000);
-	wam->moveTo(targetPos);
 }
 
 #endif /* GRASPER_H_ */
