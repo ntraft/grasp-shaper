@@ -51,7 +51,7 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 	cbreak();
 	printMenu();
 	int consoleTop = getcury(stdscr);
-	move(++consoleTop, 0);
+	move(consoleTop+=2, 0);
 	printData("Home position: ", wam.getHomePosition());
 
 	int c;

@@ -65,7 +65,6 @@ public:
 	jp_type targetPos;
 	Hand::jp_type handPrepPos;
 	Hand::jp_type graspShape;
-	Hand::jp_type prevGraspShape;
 	bool failed;
 
 	GraspThread(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand, ForceTorqueSensor* ftSensor,
@@ -78,8 +77,6 @@ public:
 	friend void graspEntryPoint(GraspThread<S>* gt);
 
 private:
-	void startGrasp();
-	void stopGrasp();
 	void startLogging();
 	void stopLogging();
 	void setPositions();
@@ -94,13 +91,11 @@ private:
 	void liftAndReturn();
 	void pauseUntilMoveIsDone();
 	void recordGraspShape();
-	void storeGraspShape();
 };
 
 template<size_t DOF>
 void graspEntryPoint(GraspThread<DOF>* gt) {
 	try {
-		gt->startGrasp();
 		gt->moveToPrep();
 		gt->prepareHand();
 //		gt->startLogging();
@@ -111,7 +106,6 @@ void graspEntryPoint(GraspThread<DOF>* gt) {
 		Pause();
 		gt->ungrasp();
 		gt->moveToPrep();
-		gt->stopGrasp();
 	} catch (boost::thread_interrupted const&) {
 		// We don't need to check for interruption ourselves; if interrupted,
 		// an exception will be thrown whenever the thread sleeps.
@@ -139,16 +133,6 @@ GraspThread<DOF>::GraspThread(systems::RealTimeExecutionManager* em, systems::Wa
 template<size_t DOF>
 GraspThread<DOF>::~GraspThread() {
 	delete logger;
-}
-
-template<size_t DOF>
-void GraspThread<DOF>::startGrasp() {
-	failed = false;
-}
-
-template<size_t DOF>
-void GraspThread<DOF>::stopGrasp() {
-	storeGraspShape();
 }
 
 template<size_t DOF>
@@ -202,13 +186,6 @@ template<size_t DOF>
 void GraspThread<DOF>::recordGraspShape() {
 	hand->update();
 	graspShape = hand->getInnerLinkPosition();
-}
-
-template<size_t DOF>
-void GraspThread<DOF>::storeGraspShape() {
-	if (!failed) {
-		prevGraspShape = graspShape;
-	}
 }
 
 template<size_t DOF>
