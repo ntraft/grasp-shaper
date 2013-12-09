@@ -2,8 +2,6 @@
 #include "Grasper.h"
 #include "utils.h"
 
-#include <curses.h>
-
 #include <barrett/units.h>
 #include <barrett/systems.h>
 #include <barrett/products/product_manager.h>
@@ -32,30 +30,11 @@ void printMenu() {
 	refresh();
 }
 
-void printlog(const char* str, ...) {
-	va_list args;
-	va_start(args, str);
-	printw(str, args);
-	va_end(args);
-	refresh();
-}
-
 #define BARRETT_SMF_CONFIGURE_PM
 bool configure_pm(int argc, char** argv, ::barrett::ProductManager& pm) {
 	printf("The WAM is not configured correctly!\n");
 	printf("This program requires a 7-degree WAM, a BarrettHand, and a 6-DOF force/torque sensor.\n");
 	return pm.foundWam7() && pm.foundHand() && pm.foundForceTorqueSensor();
-}
-
-template<int R, typename Units>
-void printData(const char* msg, const math::Matrix<R,1, Units>& from) {
-	printlog(msg);
-	printw("[%6.3f", from[0]);
-	for (size_t i = 1; i < R; ++i) {
-		printw(", %6.3f", from[i]);
-	}
-	printw("]\n");
-	refresh();
 }
 
 template<size_t DOF>
@@ -139,7 +118,7 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 		}
 	}
 
-	printlog("Please idle the WAM.\n");
+	printlog("Please Shift-idle the WAM.\n");
 	pm.getSafetyModule()->waitForMode(SafetyModule::IDLE);
 	endwin();
 	return 0;

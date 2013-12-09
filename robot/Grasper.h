@@ -148,10 +148,12 @@ void Grasper<DOF>::setPositions(char graspType) {
 	}
 	if (graspThread != NULL && graspThread->graspType == graspType) {
 		handPrepPos = graspThread->graspShape;
+		printData("Got previous grasp: ", handPrepPos);
 		// 50% of the original closure.
 		handPrepPos[0] *= .5;
 		handPrepPos[1] *= .5;
 		handPrepPos[2] *= .5;
+		printData("Adjusted previous grasp: ", handPrepPos);
 	} else {
 		switch (graspType) {
 		case 'g':
