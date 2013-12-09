@@ -96,7 +96,7 @@ void graspEntryPoint(GraspThread<DOF>* gt) {
 	try {
 		gt->moveToPrep();
 		gt->prepareHand();
-		gt->startLogging();
+//		gt->startLogging();
 		gt->moveToTarget();
 		Pause();
 		gt->grasp();
@@ -110,7 +110,7 @@ void graspEntryPoint(GraspThread<DOF>* gt) {
 	} catch (...) {
 		printf("Unexpected exception!");
 	}
-	gt->stopLogging();
+//	gt->stopLogging();
 }
 
 template<size_t DOF>
