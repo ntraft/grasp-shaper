@@ -98,7 +98,6 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 			wam.moveHome(false);
 			Pause(500);
 			hand->open(false);
-			while (!wam.moveIsDone() || !hand->doneMoving()) Pause(100);
 			break;
 
 		case 'i':
@@ -115,12 +114,12 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 
 		case 'o':
 			printlog("Opening hand.\n");
-			hand->open();
+			hand->open(false);
 			break;
 
 		case 'c':
 			printlog("Closing hand.\n");
-			hand->close();
+			hand->close(false);
 			break;
 
 		case 'j':
