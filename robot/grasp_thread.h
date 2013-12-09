@@ -89,6 +89,7 @@ private:
 	void moveHand(Hand::jp_type& dest);
 	void liftAndReturn();
 	void pauseUntilMoveIsDone();
+	void recordGraspShape();
 };
 
 template<size_t DOF>
@@ -180,6 +181,12 @@ void GraspThread<DOF>::failedGrasp() {
 }
 
 template<size_t DOF>
+void GraspThread<DOF>::recordGraspShape() {
+	hand->update();
+	graspShape = hand->getInnerLinkPosition();
+}
+
+template<size_t DOF>
 void GraspThread<DOF>::prepareHand() {
 	moveHand(handPrepPos);
 }
@@ -231,9 +238,8 @@ void GraspThread<DOF>::liftAndReturn() {
 	liftPos[1] -= 0.3;
 	wam->moveTo(liftPos, false);
 	pauseUntilMoveIsDone();
-	hand->update();
-	graspShape = hand->getInnerLinkPosition();
 	Pause(2000);
+	recordGraspShape();
 	wam->moveTo(targetPos, false);
 	pauseUntilMoveIsDone();
 }

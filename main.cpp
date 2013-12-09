@@ -125,7 +125,8 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 		case 'j':
 			hand->update();
 			printData("WAM position: ", wam.getJointPositions());
-			printData("Hand position: ", hand->getOuterLinkPosition());
+			printData("Hand outer position: ", hand->getOuterLinkPosition());
+			printData("Hand inner position: ", hand->getInnerLinkPosition());
 			break;
 
 		case 'q':
