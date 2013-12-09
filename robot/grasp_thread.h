@@ -215,7 +215,7 @@ void GraspThread<DOF>::grasp() {
 
 template<size_t DOF>
 void GraspThread<DOF>::ungrasp() {
-	moveFingersTo(0);
+	moveHand(handPrepPos);
 }
 
 template<size_t DOF>
