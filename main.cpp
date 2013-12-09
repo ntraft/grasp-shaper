@@ -47,14 +47,11 @@ bool configure_pm(int argc, char** argv, ::barrett::ProductManager& pm) {
 template<int R, typename Units>
 void printData(const char* msg, const math::Matrix<R,1, Units>& from) {
 	printlog(msg);
-
 	printw("[%6.3f", from[0]);
 	for (size_t i = 1; i < R; ++i) {
 		printw(", %6.3f", from[i]);
 	}
-	printw("]");
-
-	printw("\n");
+	printw("]\n");
 }
 
 template<size_t DOF>
@@ -73,7 +70,7 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 	int consoleTop = 0;
 	printMenu(consoleTop);
 	move(++consoleTop, 0);
-	printData("Home position: %s\n", wam.getHomePosition());
+	printData("Home position: ", wam.getHomePosition());
 	refresh();
 
 	int c;
@@ -116,8 +113,8 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 
 		case 'j':
 			hand->update();
-			printData("WAM position: \n", wam.getJointPositions());
-			printData("Hand position: %s\n", hand->getOuterLinkPosition());
+			printData("WAM position: ", wam.getJointPositions());
+			printData("Hand position: ", hand->getOuterLinkPosition());
 			break;
 
 		case 'q':
