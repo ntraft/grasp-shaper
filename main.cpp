@@ -45,12 +45,14 @@ bool configure_pm(int argc, char** argv, ::barrett::ProductManager& pm) {
 }
 
 template<int R, typename Units>
-const char* toString(const math::Matrix<R,1, Units>& dest) {
-	std::stringstream to;
+std::string toString(const math::Matrix<R,1, Units>& dest) {
+	char to[128];
+	sprintf(to, "[%6.3f", dest[0]);
 	for (size_t i = 1; i < R; ++i) {
-		to << double(dest[i]);
+		sprintf(to, ", %6.3f", dest[i]);
 	}
-	return to.str().c_str();
+	sprintf(to, "]");
+	return std::string(to);
 }
 
 template<size_t DOF>
@@ -69,7 +71,7 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 	int consoleTop;
 	printMenu(consoleTop);
 	move(++consoleTop, 0);
-	printlog("Home position: %s\n", toString(wam.getHomePosition()));
+	printlog("Home position: %s\n", toString(wam.getHomePosition()).c_str());
 	refresh();
 
 	int c;
@@ -112,8 +114,8 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 
 		case 'j':
 			hand->update();
-			printlog("WAM position: %s\n", toString(wam.getJointPositions()));
-			printlog("Hand position: %s\n", toString(hand->getOuterLinkPosition()));
+			printlog("WAM position: %s\n", toString(wam.getJointPositions()).c_str());
+			printlog("Hand position: %s\n", toString(hand->getOuterLinkPosition()).c_str());
 			break;
 
 		case 'q':
