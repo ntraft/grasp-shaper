@@ -195,7 +195,7 @@ void GraspThread<DOF>::moveToTarget() {
 
 template<size_t DOF>
 void GraspThread<DOF>::move(jp_type& dest) {
-	wam->moveTo(dest, false, 5.0, 5.0);
+	wam->moveTo(dest, false, 1.0, 1.0);
 	pauseUntilMoveIsDone();
 }
 
