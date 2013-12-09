@@ -95,9 +95,9 @@ Grasper<DOF>::~Grasper() {
 
 template<size_t DOF>
 void Grasper<DOF>::doGrasp(char graspType) {
-	halt();
 	currGrasp = graspType;
 	setPositions(graspType);
+	halt();
 	graspThread = new GraspThread<DOF>(em, wam, hand, ftSensor, &logCount,
 			currGrasp, prepPos, targetPos, handPrepPos);
 	threadRunner = new boost::thread(graspEntryPoint<DOF>, graspThread);

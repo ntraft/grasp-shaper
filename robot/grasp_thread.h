@@ -183,9 +183,7 @@ void GraspThread<DOF>::failedGrasp() {
 template<size_t DOF>
 void GraspThread<DOF>::recordGraspShape() {
 	hand->update();
-	printData("Getting inner position: ", hand->getInnerLinkPosition());
 	graspShape = hand->getInnerLinkPosition();
-	printData("Got inner position: ", graspShape);
 }
 
 template<size_t DOF>
