@@ -178,6 +178,7 @@ void GraspThread<DOF>::stopLogging() {
 template<size_t DOF>
 void GraspThread<DOF>::failedGrasp() {
 	// TODO record failure
+	ungrasp();
 }
 
 template<size_t DOF>
