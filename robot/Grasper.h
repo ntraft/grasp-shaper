@@ -146,18 +146,26 @@ void Grasper<DOF>::setPositions(char graspType) {
 		throw 1;
 		return;
 	}
-	switch (graspType) {
-	case 'g':
-	case 'p':
-	case 'm':
-		handPrepPos = prism;
-		break;
-	case 't':
-		handPrepPos = tripod;
-		break;
-	case 'w':
-		handPrepPos = wrap;
-		break;
+	if (graspThread != NULL && graspThread->graspType == graspType) {
+		handPrepPos = graspThread->graspShape;
+		// 50% of the original closure.
+		handPrepPos[0] *= .5;
+		handPrepPos[1] *= .5;
+		handPrepPos[2] *= .5;
+	} else {
+		switch (graspType) {
+		case 'g':
+		case 'p':
+		case 'm':
+			handPrepPos = prism;
+			break;
+		case 't':
+			handPrepPos = tripod;
+			break;
+		case 'w':
+			handPrepPos = wrap;
+			break;
+		}
 	}
 }
 

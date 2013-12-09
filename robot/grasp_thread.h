@@ -58,13 +58,14 @@ private:
     TactileOutput tactOut;
 	systems::PeriodicDataLogger<sample>* logger;
 
+public:
 	// Grasp description
 	char graspType;
 	jp_type prepPos;
 	jp_type targetPos;
 	Hand::jp_type handPrepPos;
+	Hand::jp_type graspShape;
 
-public:
 	GraspThread(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand, ForceTorqueSensor* ftSensor,
 			unsigned int* logCount, char graspType, jp_type prepPos, jp_type targetPos, Hand::jp_type handPrepPos);
 	virtual ~GraspThread();
@@ -230,6 +231,8 @@ void GraspThread<DOF>::liftAndReturn() {
 	liftPos[1] -= 0.3;
 	wam->moveTo(liftPos, false);
 	pauseUntilMoveIsDone();
+	hand->update();
+	graspShape = hand->getInnerLinkPosition();
 	Pause(2000);
 	wam->moveTo(targetPos, false);
 	pauseUntilMoveIsDone();
