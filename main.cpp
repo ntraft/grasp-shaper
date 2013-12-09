@@ -12,21 +12,29 @@
 
 using namespace barrett;
 
-void printMenu() {
-	printw("Commands:\n");
-	printf("  g\tInitiate a grasp\n");
-	printf("   g\t Power grip [default]\n");
-	printf("   p\t Prismatic precision\n");
-	printf("   m\t Top-down prismatic\n");
-	printf("   t\t Top-down tripod\n");
-	printf("   w\t Heavy wrap\n");
-	printf("  h\tMove to the home position\n");
-	printf("  i\tIdle (release position/orientation constraints)\n");
-	printf("  r\tReset hand (make sure it has room!)\n");
-	printf("  o\tOpen hand\n");
-	printf("  c\tClose hand\n");
-	printf("  p\tPrint current joint position\n");
-	printf("  q\tQuit\n");
+
+void printMenu(int &line) {
+	mvprintw(line++, 0, "Commands:\n");
+	mvprintw(line++, 0, "  g\tInitiate a grasp\n");
+	mvprintw(line++, 0, "   g\t Power grip [default]\n");
+	mvprintw(line++, 0, "   p\t Prismatic precision\n");
+	mvprintw(line++, 0, "   m\t Top-down prismatic\n");
+	mvprintw(line++, 0, "   t\t Top-down tripod\n");
+	mvprintw(line++, 0, "   w\t Heavy wrap\n");
+	mvprintw(line++, 0, "  h\tMove to the home position\n");
+	mvprintw(line++, 0, "  i\tIdle (release position/orientation constraints)\n");
+	mvprintw(line++, 0, "  r\tReset hand (make sure it has room!)\n");
+	mvprintw(line++, 0, "  o\tOpen hand\n");
+	mvprintw(line++, 0, "  c\tClose hand\n");
+	mvprintw(line++, 0, "  j\tPrint current joint position\n");
+	mvprintw(line++, 0, "  q\tQuit\n");
+}
+
+void printlog(const char* str, ...) {
+	va_list args;
+	va_start(args, str);
+	printw(str, args);
+	va_end(args);
 }
 
 #define BARRETT_SMF_CONFIGURE_PM
@@ -36,25 +44,42 @@ bool configure_pm(int argc, char** argv, ::barrett::ProductManager& pm) {
 	return pm.foundWam7() && pm.foundHand() && pm.foundForceTorqueSensor();
 }
 
+template<int R, typename Units>
+const char* toString(const math::Matrix<R,1, Units>& dest) {
+	std::stringstream to;
+	for (size_t i = 1; i < R; ++i) {
+		to << dest[i];
+	}
+	return to.str().c_str();
+}
+
 template<size_t DOF>
 int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) {
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
 
 	Hand* hand = pm.getHand();
 	Grasper<DOF> grasper(pm.getExecutionManager(), &wam, hand, pm.getForceTorqueSensor());
-	std::cout << "Home position: " << wam.getHomePosition() << std::endl;
 	wam.gravityCompensate();
-	printMenu();
 
-	std::string line;
+	// Ready the screen for display and input.
+	initscr();
+	noecho();
+	cbreak();
+	refresh();
+	int consoleTop;
+	printMenu(consoleTop);
+	move(++consoleTop, 0);
+	printlog("Home position: %s\n", toString(wam.getHomePosition()));
+	refresh();
+
+	int c;
 	bool going = true;
 	while (going) {
-		printf(">>> ");
-		std::getline(std::cin, line);
+		c = getch();
 
-		switch (line[0]) {
-		case 'g':
-			grasper.doGrasp(line[1]);
+		switch (c) {
+		case 'g': case 'p': case 'm': case 't': case 'w':
+			grasper.doGrasp(c);
 			break;
 
 		case 'h':
@@ -65,40 +90,42 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 			break;
 
 		case 'i':
-			printf("WAM idled.\n");
+			printlog("WAM idled.\n");
 			wam.idle();
             hand->idle();
 			break;
 
 		case 'r':
-			printf("Initializing hand.\n");
+			printlog("Initializing hand.\n");
 			hand->initialize();
 			break;
 
 		case 'o':
-			printf("Opening hand.\n");
+			printlog("Opening hand.\n");
 			hand->open();
 			break;
 
 		case 'c':
-			printf("Closing hand.\n");
+			printlog("Closing hand.\n");
 			hand->close();
 			break;
 
-		case 'p':
+		case 'j':
 			hand->update();
-			std::cout << "WAM position: " << wam.getJointPositions() << std::endl;
-			std::cout << "Hand position: " << hand->getOuterLinkPosition() << std::endl;
+			printlog("WAM position: ", toString(wam.getJointPositions()));
+			printlog("Hand position: ", toString(hand->getOuterLinkPosition()));
 			break;
 
 		case 'q':
 		case 'x':
-			printf("Quitting.\n");
+		case 27: // Esc
+			printlog("Quitting.\n");
 			going = false;
 			break;
 		}
 	}
 
 	pm.getSafetyModule()->waitForMode(SafetyModule::IDLE);
+	endwin();
 	return 0;
 }
