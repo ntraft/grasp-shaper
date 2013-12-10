@@ -40,6 +40,7 @@ private:
 
 	// Grasp tracking
 	unsigned int logCount;
+	const char* objName;
 	char currGrasp;
 	boost::thread* threadRunner;
 	GraspThread<DOF>* graspThread;
@@ -61,6 +62,7 @@ public:
 	Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand, ForceTorqueSensor* ftSensor);
 	virtual ~Grasper();
 
+	void setObjectName(const char* name);
 	void doGrasp(char graspType);
 	void failedGrasp();
 	void halt();
@@ -80,7 +82,7 @@ private:
 template<size_t DOF>
 Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand, ForceTorqueSensor* ftSensor) :
 	em(em), wam(wam), hand(hand), ftSensor(ftSensor),
-	logCount(0), currGrasp('\0'), threadRunner(NULL), graspThread(NULL),
+	logCount(0), objName("\0"), currGrasp('\0'), threadRunner(NULL), graspThread(NULL),
 	prepPos(inFrontPos), targetPos(powerPos), handPrepPos(prism),
 	inFront(inFrontPos), above(abovePos), power(powerPos), precision(precisionPos), topDown(topDownPos)
 {
@@ -94,12 +96,17 @@ Grasper<DOF>::~Grasper() {
 }
 
 template<size_t DOF>
+void Grasper<DOF>::setObjectName(const char* name) {
+	objName = name;
+}
+
+template<size_t DOF>
 void Grasper<DOF>::doGrasp(char graspType) {
 	currGrasp = graspType;
 	setPositions(graspType);
 	halt();
 	graspThread = new GraspThread<DOF>(em, wam, hand, ftSensor, &logCount,
-			currGrasp, prepPos, targetPos, handPrepPos);
+			objName, currGrasp, prepPos, targetPos, handPrepPos);
 	threadRunner = new boost::thread(graspEntryPoint<DOF>, graspThread);
 }
 

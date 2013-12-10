@@ -16,6 +16,7 @@
 
 #include <cstdio>
 
+#include <boost/format.hpp>
 #include <boost/thread.hpp>
 #include <boost/tuple/tuple.hpp>
 
@@ -60,6 +61,7 @@ private:
 
 public:
 	// Grasp description
+	const char* objName;
 	char graspType;
 	jp_type prepPos;
 	jp_type targetPos;
@@ -68,7 +70,8 @@ public:
 	bool failed;
 
 	GraspThread(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand, ForceTorqueSensor* ftSensor,
-			unsigned int* logCount, char graspType, jp_type prepPos, jp_type targetPos, Hand::jp_type handPrepPos);
+			unsigned int* logCount, const char* objName, char graspType,
+			jp_type prepPos, jp_type targetPos, Hand::jp_type handPrepPos);
 	virtual ~GraspThread();
 
 	void failedGrasp();
@@ -117,10 +120,13 @@ void graspEntryPoint(GraspThread<DOF>* gt) {
 
 template<size_t DOF>
 GraspThread<DOF>::GraspThread(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand, ForceTorqueSensor* ftSensor,
-		unsigned int* logCount, char graspType, jp_type prepPos, jp_type targetPos, Hand::jp_type handPrepPos) :
+		unsigned int* logCount, const char* objName, char graspType,
+		jp_type prepPos, jp_type targetPos, Hand::jp_type handPrepPos) :
 	em(em), wam(wam), hand(hand), ftSensor(ftSensor), logCount(logCount), T_s(em->getPeriod()), time(em),
 	fingerPosOut(hand), fingerTorqueOut(hand), forceTorqueOut(ftSensor), tactOut(hand->getTactilePucks()), logger(NULL),
-	graspType(graspType), prepPos(prepPos), targetPos(targetPos), handPrepPos(handPrepPos), failed(false)
+	objName(objName), graspType(graspType),
+	prepPos(prepPos), targetPos(targetPos), handPrepPos(handPrepPos),
+	failed(false)
 {
 	systems::connect(time.output, dataOutput.template getInput<0>());
 	systems::connect(wam->jpOutput, dataOutput.template getInput<1>());
@@ -138,7 +144,7 @@ GraspThread<DOF>::~GraspThread() {
 template<size_t DOF>
 void GraspThread<DOF>::startLogging() {
 	if (logger != NULL) {
-		printf("ERROR: Already logging!"); // TODO change printf's to printw's
+		printf("ERROR: Already logging!\n"); // TODO change printf's to printw's
 		return;
 	}
 
@@ -172,7 +178,10 @@ void GraspThread<DOF>::stopLogging() {
 	char *logFile;
 	asprintf(&logFile, "logs/dataLog%d.log", (*logCount)++);
 	log::Reader<sample> reader(tmpFile);
-	reader.exportCSV(logFile);
+	std::ofstream ofs(logFile);
+	ofs << boost::format("%s, %c \n") % objName % graspType;
+	reader.exportCSV(ofs);
+	ofs.close();
 	std::remove(tmpFile);
 }
 

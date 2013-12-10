@@ -10,14 +10,18 @@
 
 using namespace barrett;
 
+#define NAME_LIMIT 64
 
 void printMenu() {
 	printw("Grasping commands:\n");
+	printw("  Shapes:\n");
 	printw("  g\t Power grip [default]\n");
 	printw("  p\t Prismatic precision\n");
 	printw("  m\t Top-down prismatic\n");
 	printw("  t\t Top-down tripod\n");
 	printw("  w\t Heavy wrap\n");
+	printw("  Metadata:\n");
+	printw("  n\t Set object name\n");
 	printw("  f\t Record a failed grasp\n");
 	printw("Basic commands:\n");
 	printw("  h\tMove to the home position\n");
@@ -52,9 +56,14 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 	printMenu();
 	int consoleTop = getcury(stdscr);
 	move(consoleTop+=2, 0);
+	printw("Object Name: ");
+	int namey, namex;
+	getyx(stdscr, namey, namex);
+	move(consoleTop+=2, 0);
 	printData("Home position: ", wam.getHomePosition());
 
 	int c;
+	char* newName;
 	bool going = true;
 	while (going) {
 		c = getch();
@@ -70,6 +79,14 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 
 		case 'f':
 			grasper.failedGrasp();
+			break;
+
+		case 'n':
+			echo();
+			newName = new char[NAME_LIMIT];
+			mvgetnstr(namey, namex, newName, NAME_LIMIT);
+			noecho();
+			grasper.setObjectName(newName);
 			break;
 
 		case 'h':
