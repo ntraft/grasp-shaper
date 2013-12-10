@@ -101,7 +101,7 @@ void graspEntryPoint(GraspThread<DOF>* gt) {
 	try {
 		gt->moveToPrep();
 		gt->prepareHand();
-//		gt->startLogging();
+		gt->startLogging();
 		gt->moveToTarget();
 		Pause();
 		gt->grasp();
@@ -115,7 +115,7 @@ void graspEntryPoint(GraspThread<DOF>* gt) {
 	} catch (...) {
 		printf("Unexpected exception!");
 	}
-//	gt->stopLogging();
+	gt->stopLogging();
 }
 
 template<size_t DOF>
@@ -130,10 +130,10 @@ GraspThread<DOF>::GraspThread(systems::RealTimeExecutionManager* em, systems::Wa
 {
 	systems::connect(time.output, dataOutput.template getInput<0>());
 	systems::connect(wam->jpOutput, dataOutput.template getInput<1>());
-	systems::connect(fingerPosOut.output, dataOutput.template getInput<2>());
-	systems::connect(fingerTorqueOut.output, dataOutput.template getInput<3>());
-	systems::connect(forceTorqueOut.output, dataOutput.template getInput<4>());
-	systems::connect(tactOut.output, dataOutput.template getInput<5>());
+//	systems::connect(fingerPosOut.output, dataOutput.template getInput<2>());
+//	systems::connect(fingerTorqueOut.output, dataOutput.template getInput<3>());
+//	systems::connect(forceTorqueOut.output, dataOutput.template getInput<4>());
+//	systems::connect(tactOut.output, dataOutput.template getInput<5>());
 }
 
 template<size_t DOF>
