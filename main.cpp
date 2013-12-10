@@ -57,7 +57,7 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 	int consoleTop = getcury(stdscr);
 	move(consoleTop+=2, 0);
 	printw("Object Name: ");
-	int namey, namex;
+	int y, x, namey, namex;
 	getyx(stdscr, namey, namex);
 	move(consoleTop+=2, 0);
 	printData("Home position: ", wam.getHomePosition());
@@ -84,7 +84,11 @@ int wam_main(int argc, char** argv, ProductManager& pm, systems::Wam<DOF>& wam) 
 		case 'n':
 			echo();
 			newName = new char[NAME_LIMIT];
-			mvgetnstr(namey, namex, newName, NAME_LIMIT);
+            getyx(stdscr, y, x);
+            move(namey, namex);
+            clrtoeol();
+			getnstr(newName, NAME_LIMIT);
+            move(y, x);
 			noecho();
 			grasper.setObjectName(newName);
 			break;
