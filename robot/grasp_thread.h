@@ -56,8 +56,6 @@ private:
     FingerPositionOutput fingerPosOut;
     FingertipTorqueOutput fingerTorqueOut;
     ForceTorqueOutput forceTorqueOut;
-    cf_type dummy;
-    Constant<cf_type> constant;
     TactileOutput tactOut;
 	systems::PeriodicDataLogger<sample>* logger;
 
@@ -125,7 +123,7 @@ GraspThread<DOF>::GraspThread(systems::RealTimeExecutionManager* em, systems::Wa
 		unsigned int* logCount, const char* objName, char graspType,
 		jp_type prepPos, jp_type targetPos, Hand::jp_type handPrepPos) :
 	em(em), wam(wam), hand(hand), ftSensor(ftSensor), logCount(logCount), T_s(em->getPeriod()), time(em),
-	fingerPosOut(hand), fingerTorqueOut(hand), forceTorqueOut(ftSensor), dummy(5.0), constant(dummy), tactOut(hand->getTactilePucks()), logger(NULL),
+	fingerPosOut(hand), fingerTorqueOut(hand), forceTorqueOut(ftSensor), tactOut(hand->getTactilePucks()), logger(NULL),
 	objName(objName), graspType(graspType),
 	prepPos(prepPos), targetPos(targetPos), handPrepPos(handPrepPos),
 	failed(false)
@@ -134,22 +132,8 @@ GraspThread<DOF>::GraspThread(systems::RealTimeExecutionManager* em, systems::Wa
 	systems::connect(wam->jpOutput, dataOutput.template getInput<1>());
 	systems::connect(fingerPosOut.output, dataOutput.template getInput<2>());
 	systems::connect(fingerTorqueOut.output, dataOutput.template getInput<3>());
-//	systems::connect(forceTorqueOut.output, dataOutput.template getInput<4>());
-	systems::connect(constant.output, dataOutput.template getInput<4>());
+	systems::connect(forceTorqueOut.output, dataOutput.template getInput<4>());
 	systems::connect(tactOut.output, dataOutput.template getInput<5>());
-}
-
-template<size_t DOF>
-GraspThread<DOF>::~GraspThread() {
-	delete logger;
-}
-
-template<size_t DOF>
-void GraspThread<DOF>::startLogging() {
-	if (logger != NULL) {
-		printf("ERROR: Already logging!\n"); // TODO change printf's to printw's
-		return;
-	}
 
 	strcpy(tmpFile, "/tmp/btXXXXXX");
 	if (mkstemp(tmpFile) == -1) {
@@ -160,6 +144,15 @@ void GraspThread<DOF>::startLogging() {
 	// Can't reuse loggers or writers. Have to create new ones for each log file.
 	const size_t RATE = 25; // Take samples every 50 ms (20 Hz).
 	logger = new systems::PeriodicDataLogger<sample>(em, new log::RealTimeWriter<sample>(tmpFile, RATE*T_s), RATE);
+}
+
+template<size_t DOF>
+GraspThread<DOF>::~GraspThread() {
+	delete logger;
+}
+
+template<size_t DOF>
+void GraspThread<DOF>::startLogging() {
 	systems::connect(dataOutput.output, logger->input);
 	time.start();
 }
