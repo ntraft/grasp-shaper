@@ -28,8 +28,6 @@ template<size_t DOF>
 class Grasper {
 
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
-	#define LOG_DATA_TYPES double, jp_type, Hand::jp_type, finger_torques, cf_type, tactile_data
-	typedef boost::tuple<LOG_DATA_TYPES> sample;
 
 private:
 	// Robotic systems

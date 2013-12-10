@@ -125,7 +125,7 @@ GraspThread<DOF>::GraspThread(systems::RealTimeExecutionManager* em, systems::Wa
 		unsigned int* logCount, const char* objName, char graspType,
 		jp_type prepPos, jp_type targetPos, Hand::jp_type handPrepPos) :
 	em(em), wam(wam), hand(hand), ftSensor(ftSensor), logCount(logCount), T_s(em->getPeriod()), time(em),
-	fingerPosOut(hand), fingerTorqueOut(hand), forceTorqueOut(ftSensor), dummy(5,5,5), constant(dummy), tactOut(hand->getTactilePucks()), logger(NULL),
+	fingerPosOut(hand), fingerTorqueOut(hand), forceTorqueOut(ftSensor), dummy(5.0), constant(dummy), tactOut(hand->getTactilePucks()), logger(NULL),
 	objName(objName), graspType(graspType),
 	prepPos(prepPos), targetPos(targetPos), handPrepPos(handPrepPos),
 	failed(false)
