@@ -56,6 +56,8 @@ private:
     FingerPositionOutput fingerPosOut;
     FingertipTorqueOutput fingerTorqueOut;
     ForceTorqueOutput forceTorqueOut;
+    cf_type dummy;
+    Constant<cf_type> constant;
     TactileOutput tactOut;
 	systems::PeriodicDataLogger<sample>* logger;
 
@@ -123,17 +125,18 @@ GraspThread<DOF>::GraspThread(systems::RealTimeExecutionManager* em, systems::Wa
 		unsigned int* logCount, const char* objName, char graspType,
 		jp_type prepPos, jp_type targetPos, Hand::jp_type handPrepPos) :
 	em(em), wam(wam), hand(hand), ftSensor(ftSensor), logCount(logCount), T_s(em->getPeriod()), time(em),
-	fingerPosOut(hand), fingerTorqueOut(hand), forceTorqueOut(ftSensor), tactOut(hand->getTactilePucks()), logger(NULL),
+	fingerPosOut(hand), fingerTorqueOut(hand), forceTorqueOut(ftSensor), dummy(5,5,5), constant(dummy), tactOut(hand->getTactilePucks()), logger(NULL),
 	objName(objName), graspType(graspType),
 	prepPos(prepPos), targetPos(targetPos), handPrepPos(handPrepPos),
 	failed(false)
 {
 	systems::connect(time.output, dataOutput.template getInput<0>());
 	systems::connect(wam->jpOutput, dataOutput.template getInput<1>());
-//	systems::connect(fingerPosOut.output, dataOutput.template getInput<2>());
-//	systems::connect(fingerTorqueOut.output, dataOutput.template getInput<3>());
+	systems::connect(fingerPosOut.output, dataOutput.template getInput<2>());
+	systems::connect(fingerTorqueOut.output, dataOutput.template getInput<3>());
 //	systems::connect(forceTorqueOut.output, dataOutput.template getInput<4>());
-//	systems::connect(tactOut.output, dataOutput.template getInput<5>());
+	systems::connect(constant.output, dataOutput.template getInput<4>());
+	systems::connect(tactOut.output, dataOutput.template getInput<5>());
 }
 
 template<size_t DOF>
