@@ -31,10 +31,10 @@ public:
 
 protected:
 	virtual void operate() {
-		for (unsigned int i = 0; i < sensors.size(); ++i) {
-			sensors[i]->updateFull(true);
-			data.row(i) = sensors[i]->getFullData();
-		}
+//		for (unsigned int i = 0; i < sensors.size(); ++i) {
+//			sensors[i]->updateFull(true);
+//			data.row(i) = sensors[i]->getFullData();
+//		}
 	}
 	virtual void invalidateOutputs() { /* do nothing */ }
 

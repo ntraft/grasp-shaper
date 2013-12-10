@@ -20,13 +20,16 @@ using namespace barrett::systems;
 class ForceTorqueOutput : public System, public SingleOutput<ForceTorqueSensor::cf_type> {
 public:
 	explicit ForceTorqueOutput(ForceTorqueSensor* sensor, const std::string& sysName = "ForceTorqueOutput") :
-		System(sysName), SingleOutput<ForceTorqueSensor::cf_type>(this), sensor(sensor) { }
+		System(sysName), SingleOutput<ForceTorqueSensor::cf_type>(this), sensor(sensor)
+        {
+            this->outputValue->setData(&sensor->getForce());
+        }
 	virtual ~ForceTorqueOutput() { mandatoryCleanUp(); }
 
 protected:
 	virtual void operate() {
-		sensor->update(true);
-		outputValue->setData(&sensor->getForce());
+//		sensor->update(true);
+//		outputValue->setData(&sensor->getForce());
 	}
 	virtual void invalidateOutputs() { /* do nothing */ }
 

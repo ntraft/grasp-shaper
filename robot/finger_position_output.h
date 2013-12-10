@@ -20,13 +20,16 @@ using namespace barrett::systems;
 class FingerPositionOutput : public System, public SingleOutput<Hand::jp_type> {
 public:
 	explicit FingerPositionOutput(Hand* hand, const std::string& sysName = "FingerPositionOutput") :
-		System(sysName), SingleOutput<Hand::jp_type>(this), hand(hand) { }
+		System(sysName), SingleOutput<Hand::jp_type>(this), hand(hand)
+        {
+            this->outputValue->setData(&hand->getOuterLinkPosition());
+        }
 	virtual ~FingerPositionOutput() { mandatoryCleanUp(); }
 
 protected:
 	virtual void operate() {
-		hand->update(Hand::S_POSITION, true);
-		outputValue->setData(&hand->getOuterLinkPosition());
+//		hand->update(Hand::S_POSITION, true);
+//		outputValue->setData(&hand->getOuterLinkPosition());
 	}
 	virtual void invalidateOutputs() { /* do nothing */ }
 

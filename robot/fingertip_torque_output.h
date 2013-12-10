@@ -31,11 +31,11 @@ public:
 
 protected:
 	virtual void operate() {
-		hand->update(Hand::S_FINGERTIP_TORQUE, true);
-		const std::vector<int> torques = hand->getFingertipTorque();
-		for (unsigned int i = 0; i < torques.size(); ++i) {
-			data[i] = torques[i];
-		}
+//		hand->update(Hand::S_FINGERTIP_TORQUE, true);
+//		const std::vector<int> torques = hand->getFingertipTorque();
+//		for (unsigned int i = 0; i < torques.size(); ++i) {
+//			data[i] = torques[i];
+//		}
 	}
 	virtual void invalidateOutputs() { /* do nothing */ }
 
