@@ -8,6 +8,8 @@
 #ifndef FORCE_TORQUE_OUTPUT_H_
 #define FORCE_TORQUE_OUTPUT_H_
 
+#include <boost/asio/io_service.hpp>
+
 #include <barrett/detail/ca_macro.h>
 #include <barrett/products/product_manager.h>
 #include <barrett/systems.h>
@@ -19,8 +21,8 @@ using namespace barrett::systems;
 
 class ForceTorqueOutput : public System, public SingleOutput<ForceTorqueSensor::cf_type> {
 public:
-	explicit ForceTorqueOutput(ForceTorqueSensor* sensor, const std::string& sysName = "ForceTorqueOutput") :
-		System(sysName), SingleOutput<ForceTorqueSensor::cf_type>(this), sensor(sensor)
+	explicit ForceTorqueOutput(ForceTorqueSensor* sensor, boost::asio::io_service* sensorUpdater, const std::string& sysName = "ForceTorqueOutput") :
+		System(sysName), SingleOutput<ForceTorqueSensor::cf_type>(this), sensor(sensor), sensorUpdater(sensorUpdater)
         {
             this->outputValue->setData(&sensor->getForce());
         }
@@ -28,12 +30,14 @@ public:
 
 protected:
 	virtual void operate() {
-//		sensor->update(true);
-//		outputValue->setData(&sensor->getForce());
+		sensorUpdater->post(boost::bind(&ForceTorqueOutput::updateSensor, this));
+		outputValue->setData(&sensor->getForce());
 	}
+	void updateSensor() { sensor->update(); }
 	virtual void invalidateOutputs() { /* do nothing */ }
 
 	ForceTorqueSensor* sensor;
+	boost::asio::io_service* sensorUpdater;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(ForceTorqueOutput);

@@ -37,7 +37,8 @@ template<size_t DOF>
 class GraspThread {
 
 	BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
-	#define LOG_DATA_TYPES double, jp_type, Hand::jp_type, finger_torques, cf_type, tactile_data
+	#define SENSOR_TYPES jp_type, Hand::jp_type, finger_torques, cf_type, tactile_data
+	#define LOG_DATA_TYPES double, boost::tuple<SENSOR_TYPES>
 	typedef boost::tuple<LOG_DATA_TYPES> sample;
 
 private:
@@ -53,10 +54,6 @@ private:
     const double T_s;
 	systems::Ramp time;
     systems::TupleGrouper<LOG_DATA_TYPES> dataOutput;
-    FingerPositionOutput fingerPosOut;
-    FingertipTorqueOutput fingerTorqueOut;
-    ForceTorqueOutput forceTorqueOut;
-    TactileOutput tactOut;
 	systems::PeriodicDataLogger<sample>* logger;
 
 public:
@@ -70,7 +67,7 @@ public:
 	bool failed;
 
 	GraspThread(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand, ForceTorqueSensor* ftSensor,
-			unsigned int* logCount, const char* objName, char graspType,
+			systems::TupleGrouper<SENSOR_TYPES>& sensorData, unsigned int* logCount, const char* objName, char graspType,
 			jp_type prepPos, jp_type targetPos, Hand::jp_type handPrepPos);
 	virtual ~GraspThread();
 
@@ -103,10 +100,10 @@ void graspEntryPoint(GraspThread<DOF>* gt) {
 		gt->prepareHand();
 		gt->startLogging();
 		gt->moveToTarget();
-		Pause();
+//		Pause();
 		gt->grasp();
 		gt->liftAndReturn();
-		Pause();
+//		Pause();
 		gt->ungrasp();
 		gt->moveToPrep();
 	} catch (boost::thread_interrupted const&) {
@@ -120,20 +117,28 @@ void graspEntryPoint(GraspThread<DOF>* gt) {
 
 template<size_t DOF>
 GraspThread<DOF>::GraspThread(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand, ForceTorqueSensor* ftSensor,
-		unsigned int* logCount, const char* objName, char graspType,
+		systems::TupleGrouper<SENSOR_TYPES>& sensorData, unsigned int* logCount, const char* objName, char graspType,
 		jp_type prepPos, jp_type targetPos, Hand::jp_type handPrepPos) :
 	em(em), wam(wam), hand(hand), ftSensor(ftSensor), logCount(logCount), T_s(em->getPeriod()), time(em),
-	fingerPosOut(hand), fingerTorqueOut(hand), forceTorqueOut(ftSensor), tactOut(hand->getTactilePucks()), logger(NULL),
-	objName(objName), graspType(graspType),
+	logger(NULL), objName(objName), graspType(graspType),
 	prepPos(prepPos), targetPos(targetPos), handPrepPos(handPrepPos),
 	failed(false)
 {
 	systems::connect(time.output, dataOutput.template getInput<0>());
-	systems::connect(wam->jpOutput, dataOutput.template getInput<1>());
-	systems::connect(fingerPosOut.output, dataOutput.template getInput<2>());
-	systems::connect(fingerTorqueOut.output, dataOutput.template getInput<3>());
-	systems::connect(forceTorqueOut.output, dataOutput.template getInput<4>());
-	systems::connect(tactOut.output, dataOutput.template getInput<5>());
+	systems::connect(sensorData.output, dataOutput.template getInput<1>());
+}
+
+template<size_t DOF>
+GraspThread<DOF>::~GraspThread() {
+	delete logger;
+}
+
+template<size_t DOF>
+void GraspThread<DOF>::startLogging() {
+	if (logger != NULL) {
+		printf("ERROR: Already logging!\n"); // TODO change printf's to printw's
+		return;
+	}
 
 	strcpy(tmpFile, "/tmp/btXXXXXX");
 	if (mkstemp(tmpFile) == -1) {
@@ -144,15 +149,6 @@ GraspThread<DOF>::GraspThread(systems::RealTimeExecutionManager* em, systems::Wa
 	// Can't reuse loggers or writers. Have to create new ones for each log file.
 	const size_t RATE = 25; // Take samples every 50 ms (20 Hz).
 	logger = new systems::PeriodicDataLogger<sample>(em, new log::RealTimeWriter<sample>(tmpFile, RATE*T_s), RATE);
-}
-
-template<size_t DOF>
-GraspThread<DOF>::~GraspThread() {
-	delete logger;
-}
-
-template<size_t DOF>
-void GraspThread<DOF>::startLogging() {
 	systems::connect(dataOutput.output, logger->input);
 	time.start();
 }
@@ -253,7 +249,7 @@ void GraspThread<DOF>::liftAndReturn() {
 
 template<size_t DOF>
 void GraspThread<DOF>::pauseUntilMoveIsDone() {
-	while (!wam->moveIsDone() || !hand->doneMoving()) Pause(20);
+	while (!wam->moveIsDone() || !hand->doneMoving()) Pause(10);
 }
 
 #endif /* GRASP_THREAD_H_ */

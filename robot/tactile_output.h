@@ -8,6 +8,8 @@
 #ifndef TACTILE_OUTPUT_H_
 #define TACTILE_OUTPUT_H_
 
+#include <boost/asio/io_service.hpp>
+
 #include <barrett/detail/ca_macro.h>
 #include <barrett/products/product_manager.h>
 #include <barrett/math/matrix.h>
@@ -22,8 +24,8 @@ typedef math::Matrix<4, TactilePuck::NUM_SENSORS, double> tactile_data;
 
 class TactileOutput : public System, public SingleOutput<tactile_data> {
 public:
-	explicit TactileOutput(std::vector<TactilePuck*> sensors, const std::string& sysName = "TactileOutput") :
-		System(sysName), SingleOutput<tactile_data>(this), sensors(sensors)
+	explicit TactileOutput(std::vector<TactilePuck*> sensors, boost::asio::io_service* sensorUpdater, const std::string& sysName = "TactileOutput") :
+		System(sysName), SingleOutput<tactile_data>(this), sensors(sensors), sensorUpdater(sensorUpdater)
 	{
 		this->outputValue->setData(&data);
 	}
@@ -31,15 +33,19 @@ public:
 
 protected:
 	virtual void operate() {
-//		for (unsigned int i = 0; i < sensors.size(); ++i) {
-//			sensors[i]->updateFull(true);
-//			data.row(i) = sensors[i]->getFullData();
-//		}
+		sensorUpdater->post(boost::bind(&TactileOutput::updateSensor, this));
+	}
+	void updateSensor() {
+		for (unsigned int i = 0; i < sensors.size(); ++i) {
+			sensors[i]->updateFull(true);
+			data.row(i) = sensors[i]->getFullData();
+		}
 	}
 	virtual void invalidateOutputs() { /* do nothing */ }
 
 	std::vector<TactilePuck*> sensors;
 	tactile_data data;
+	boost::asio::io_service* sensorUpdater;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(TactileOutput);

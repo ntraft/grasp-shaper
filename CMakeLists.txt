@@ -17,10 +17,13 @@ add_definitions(${BARRETT_DEFINITIONS})
 find_package(Curses REQUIRED)
 include_directories(${CURSES_INCLUDE_DIR})
 
+# everything else
+set (ALL_LIBS ${ALL_LIBS} ${BARRETT_LIBRARIES} ${CURSES_LIBRARIES} boost_system)
+
 # local includes
 include_directories(${PROJECT_SOURCE_DIR}/robot)
 include_directories(${PROJECT_SOURCE_DIR}/util)
 
 # main program
 add_executable(main main.cpp)
-target_link_libraries(main ${BARRETT_LIBRARIES} ${CURSES_LIBRARIES})
+target_link_libraries(main ${ALL_LIBS})
