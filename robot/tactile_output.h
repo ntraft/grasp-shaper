@@ -37,7 +37,7 @@ protected:
 	}
 	void updateSensor() {
 		for (unsigned int i = 0; i < sensors.size(); ++i) {
-			sensors[i]->updateFull(true);
+			sensors[i]->updateFull();
 			data.row(i) = sensors[i]->getFullData();
 		}
 	}

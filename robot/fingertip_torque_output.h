@@ -39,7 +39,7 @@ protected:
 			data[i] = torques[i];
 		}
 	}
-	void updateSensor() { hand->update(Hand::S_FINGERTIP_TORQUE, true); }
+	void updateSensor() { hand->update(Hand::S_FINGERTIP_TORQUE); }
 	virtual void invalidateOutputs() { /* do nothing */ }
 
 	Hand* hand;

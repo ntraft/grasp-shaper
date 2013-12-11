@@ -32,7 +32,7 @@ protected:
 	virtual void operate() {
 		outputValue->setData(&hand->getOuterLinkPosition());
 	}
-	void updateSensor() { hand->update(Hand::S_POSITION, true); }
+	void updateSensor() { hand->update(Hand::S_POSITION); }
 	virtual void invalidateOutputs() { /* do nothing */ }
 
 	Hand* hand;
