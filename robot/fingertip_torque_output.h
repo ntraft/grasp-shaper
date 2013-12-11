@@ -34,12 +34,14 @@ public:
 protected:
 	virtual void operate() {
 		sensorUpdater->post(boost::bind(&FingertipTorqueOutput::updateSensor, this));
+	}
+	void updateSensor() {
+		hand->update(Hand::S_FINGERTIP_TORQUE);
 		const std::vector<int> torques = hand->getFingertipTorque();
 		for (unsigned int i = 0; i < torques.size(); ++i) {
 			data[i] = torques[i];
 		}
 	}
-	void updateSensor() { hand->update(Hand::S_FINGERTIP_TORQUE); }
 	virtual void invalidateOutputs() { /* do nothing */ }
 
 	Hand* hand;

@@ -31,9 +31,11 @@ public:
 protected:
 	virtual void operate() {
 		sensorUpdater->post(boost::bind(&ForceTorqueOutput::updateSensor, this));
+	}
+	void updateSensor() {
+		sensor->update();
 		outputValue->setData(&sensor->getForce());
 	}
-	void updateSensor() { sensor->update(); }
 	virtual void invalidateOutputs() { /* do nothing */ }
 
 	ForceTorqueSensor* sensor;

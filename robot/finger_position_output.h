@@ -30,9 +30,12 @@ public:
 
 protected:
 	virtual void operate() {
+		sensorUpdater->post(boost::bind(&FingerPositionOutput::updateSensor, this));
+	}
+	void updateSensor() {
+		hand->update(Hand::S_POSITION);
 		outputValue->setData(&hand->getOuterLinkPosition());
 	}
-	void updateSensor() { hand->update(Hand::S_POSITION); }
 	virtual void invalidateOutputs() { /* do nothing */ }
 
 	Hand* hand;
