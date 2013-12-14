@@ -32,7 +32,6 @@ protected:
 	void updateSensor() {
 		sensor->update();
 		outputValue->setData(&sensor->getForce());
-		doneUpdating();
 	}
 
 	ForceTorqueSensor* sensor;

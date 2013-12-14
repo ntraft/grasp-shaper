@@ -38,7 +38,6 @@ protected:
 		for (unsigned int i = 0; i < torques.size(); ++i) {
 			data[i] = torques[i];
 		}
-		doneUpdating();
 	}
 
 	Hand* hand;

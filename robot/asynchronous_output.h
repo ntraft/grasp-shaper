@@ -8,6 +8,8 @@
 #ifndef ASYNCHRONOUS_OUTPUT_H_
 #define ASYNCHRONOUS_OUTPUT_H_
 
+#include "utils.h"
+
 #include <boost/thread.hpp>
 
 #include <barrett/detail/ca_macro.h>
@@ -24,19 +26,23 @@ using namespace barrett::systems;
 template<typename OutputType>
 class AsynchronousOutput : public System, public SingleOutput<OutputType> {
 public:
-	explicit AsynchronousOutput(const std::string& sysName = "AsynchronousOutput") :
-		System(sysName), SingleOutput<OutputType>(this), updating(false) { }
-	virtual ~AsynchronousOutput() { mandatoryCleanUp(); }
+	explicit AsynchronousOutput(const std::string& sysName = "AsynchronousOutput");
 
-	virtual void updateSensor() =0;
+	virtual ~AsynchronousOutput() {
+		threadRunner.interrupt();
+		threadRunner.join();
+		mandatoryCleanUp();
+	}
+
+	void checkUpdate();
 
 protected:
 	virtual void invalidateOutputs() { /* do nothing */ }
 	void operate();
-	void doneUpdating();
+	virtual void updateSensor() =0;
 
-	boost::mutex updateLock;
-	bool updating;
+	boost::thread threadRunner;
+	bool needsUpdate;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(AsynchronousOutput);
@@ -44,24 +50,31 @@ private:
 
 template<typename OutputType>
 void updateEntryPoint(AsynchronousOutput<OutputType>* out) {
-	out->updateSensor();
+	while (true) {
+		out->checkUpdate();
+		Pause(2);
+	}
 }
 
 template<typename OutputType>
-void AsynchronousOutput<OutputType>::doneUpdating() {
-	updateLock.lock();
-	updating = false;
-	updateLock.unlock();
+AsynchronousOutput<OutputType>::AsynchronousOutput(const std::string& sysName) :
+	System(sysName), SingleOutput<OutputType>(this),
+	threadRunner(updateEntryPoint<OutputType>, this), needsUpdate(false) {
+}
+
+template<typename OutputType>
+void AsynchronousOutput<OutputType>::checkUpdate() {
+	if (needsUpdate) {
+		updateSensor();
+		// I know this doesn't guarantee that a new update wasn't requested
+		// in the time since the update was performed. Who cares?
+		needsUpdate = false;
+	}
 }
 
 template<typename OutputType>
 void AsynchronousOutput<OutputType>::operate() {
-	updateLock.lock();
-	if (!updating) {
-		updating = true;
-		boost::thread thr(updateEntryPoint<OutputType>, this);
-	}
-	updateLock.unlock();
+	needsUpdate = true;
 }
 
 #endif /* ASYNCHRONOUS_OUTPUT_H_ */

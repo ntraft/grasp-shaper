@@ -37,7 +37,6 @@ protected:
 			sensors[i]->updateFull();
 			data.row(i) = sensors[i]->getFullData();
 		}
-		doneUpdating();
 	}
 
 	std::vector<TactilePuck*> sensors;

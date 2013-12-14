@@ -32,7 +32,6 @@ protected:
 	void updateSensor() {
 		hand->update(Hand::S_POSITION);
 		outputValue->setData(&hand->getOuterLinkPosition());
-		doneUpdating();
 	}
 
 	Hand* hand;
