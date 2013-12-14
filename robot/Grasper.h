@@ -10,7 +10,6 @@
 
 #include "grasp_thread.h"
 
-#include <boost/asio/io_service.hpp>
 #include <boost/thread.hpp>
 
 #include <barrett/units.h>
@@ -45,9 +44,6 @@ private:
 	GraspThread<DOF>* graspThread;
 
 	// Sensor updates
-	boost::asio::io_service sensorUpdater;
-	boost::asio::io_service::work work;
-	boost::thread_group threads;
     systems::TupleGrouper<SENSOR_TYPES> sensorData;
     FingerPositionOutput fingerPosOut;
     FingertipTorqueOutput fingerTorqueOut;
@@ -93,15 +89,12 @@ template<size_t DOF>
 Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand, ForceTorqueSensor* ftSensor) :
 	em(em), wam(wam), hand(hand), ftSensor(ftSensor),
 	logCount(0), objName("\0"), currGrasp('\0'), threadRunner(NULL), graspThread(NULL),
-	work(sensorUpdater),
-	fingerPosOut(hand, &sensorUpdater), fingerTorqueOut(hand, &sensorUpdater), forceTorqueOut(ftSensor, &sensorUpdater), tactOut(hand->getTactilePucks(), &sensorUpdater),
+	fingerPosOut(hand), fingerTorqueOut(hand), forceTorqueOut(ftSensor), tactOut(hand->getTactilePucks()),
 	prepPos(inFrontPos), targetPos(powerPos), handPrepPos(prism),
 	inFront(inFrontPos), above(abovePos), power(powerPos), precision(precisionPos), topDown(topDownPos)
 {
 	tripod[3] = 0.52;
 	wrap[3] = PI;
-
-	threads.create_thread(boost::bind(&boost::asio::io_service::run, &sensorUpdater));
 
 	systems::connect(wam->jpOutput, sensorData.template getInput<0>());
 	systems::connect(fingerPosOut.output, sensorData.template getInput<1>());
@@ -113,8 +106,6 @@ Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* 
 template<size_t DOF>
 Grasper<DOF>::~Grasper() {
 	halt();
-	sensorUpdater.stop();
-	threads.join_all();
 }
 
 template<size_t DOF>

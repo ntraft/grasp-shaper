@@ -8,7 +8,7 @@
 #ifndef TACTILE_OUTPUT_H_
 #define TACTILE_OUTPUT_H_
 
-#include <boost/asio/io_service.hpp>
+#include "asynchronous_output.h"
 
 #include <barrett/detail/ca_macro.h>
 #include <barrett/products/product_manager.h>
@@ -22,30 +22,26 @@ using namespace barrett::systems;
 
 typedef math::Matrix<4, TactilePuck::NUM_SENSORS, double> tactile_data;
 
-class TactileOutput : public System, public SingleOutput<tactile_data> {
+class TactileOutput : public AsynchronousOutput<tactile_data> {
 public:
-	explicit TactileOutput(std::vector<TactilePuck*> sensors, boost::asio::io_service* sensorUpdater, const std::string& sysName = "TactileOutput") :
-		System(sysName), SingleOutput<tactile_data>(this), sensors(sensors), sensorUpdater(sensorUpdater)
+	explicit TactileOutput(std::vector<TactilePuck*> sensors, const std::string& sysName = "TactileOutput") :
+		AsynchronousOutput<tactile_data>(sysName), sensors(sensors)
 	{
 		this->outputValue->setData(&data);
 	}
 	virtual ~TactileOutput() { mandatoryCleanUp(); }
 
 protected:
-	virtual void operate() {
-		sensorUpdater->post(boost::bind(&TactileOutput::updateSensor, this));
-	}
 	void updateSensor() {
 		for (unsigned int i = 0; i < sensors.size(); ++i) {
 			sensors[i]->updateFull();
 			data.row(i) = sensors[i]->getFullData();
 		}
+		doneUpdating();
 	}
-	virtual void invalidateOutputs() { /* do nothing */ }
 
 	std::vector<TactilePuck*> sensors;
 	tactile_data data;
-	boost::asio::io_service* sensorUpdater;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(TactileOutput);

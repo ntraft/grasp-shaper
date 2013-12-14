@@ -8,7 +8,7 @@
 #ifndef FORCE_TORQUE_OUTPUT_H_
 #define FORCE_TORQUE_OUTPUT_H_
 
-#include <boost/asio/io_service.hpp>
+#include "asynchronous_output.h"
 
 #include <barrett/detail/ca_macro.h>
 #include <barrett/products/product_manager.h>
@@ -19,27 +19,23 @@
 using namespace barrett;
 using namespace barrett::systems;
 
-class ForceTorqueOutput : public System, public SingleOutput<ForceTorqueSensor::cf_type> {
+class ForceTorqueOutput : public AsynchronousOutput<ForceTorqueSensor::cf_type> {
 public:
-	explicit ForceTorqueOutput(ForceTorqueSensor* sensor, boost::asio::io_service* sensorUpdater, const std::string& sysName = "ForceTorqueOutput") :
-		System(sysName), SingleOutput<ForceTorqueSensor::cf_type>(this), sensor(sensor), sensorUpdater(sensorUpdater)
-        {
-            this->outputValue->setData(&sensor->getForce());
-        }
+	explicit ForceTorqueOutput(ForceTorqueSensor* sensor, const std::string& sysName = "ForceTorqueOutput") :
+		AsynchronousOutput<ForceTorqueSensor::cf_type>(sysName), sensor(sensor)
+	{
+		this->outputValue->setData(&sensor->getForce());
+	}
 	virtual ~ForceTorqueOutput() { mandatoryCleanUp(); }
 
 protected:
-	virtual void operate() {
-		sensorUpdater->post(boost::bind(&ForceTorqueOutput::updateSensor, this));
-	}
 	void updateSensor() {
 		sensor->update();
 		outputValue->setData(&sensor->getForce());
+		doneUpdating();
 	}
-	virtual void invalidateOutputs() { /* do nothing */ }
 
 	ForceTorqueSensor* sensor;
-	boost::asio::io_service* sensorUpdater;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(ForceTorqueOutput);
