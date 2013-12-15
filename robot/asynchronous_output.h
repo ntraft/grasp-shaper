@@ -59,7 +59,7 @@ void updateEntryPoint(AsynchronousOutput<OutputType>* out) {
 template<typename OutputType>
 AsynchronousOutput<OutputType>::AsynchronousOutput(const std::string& sysName) :
 	System(sysName), SingleOutput<OutputType>(this),
-	threadRunner(updateEntryPoint<OutputType>, this), needsUpdate(false) {
+	threadRunner(updateEntryPoint<OutputType>, this), needsUpdate(true) {
 }
 
 template<typename OutputType>

@@ -33,7 +33,7 @@ public:
 
 protected:
 	void updateSensor() {
-		hand->update(Hand::S_FINGERTIP_TORQUE);
+//		hand->update(Hand::S_FINGERTIP_TORQUE);
 		const std::vector<int> torques = hand->getFingertipTorque();
 		for (unsigned int i = 0; i < torques.size(); ++i) {
 			data[i] = torques[i];
