@@ -172,8 +172,9 @@ void ObjectRecognizer::predict(
 	Matrix<1, LABEL_SIZE> h2 = passThroughLayer(h1a, layer2);
 
 	// Get maximum probable label.
-	int prediction;
-	h2.row(0).maxCoeff(&prediction);
+	int dummy, prediction;
+	h2.maxCoeff(&dummy, &prediction);
+	std::cout << h2 << std::endl;
 	const char* label = labelmap[prediction].c_str();
 	if (label[0] == 'a' || label[0] == 'e' || label[0] == 'i' || label[0] == 'o' || label[0] == 'u') {
 		printlog("This object is an %s (#%d).\n", label, prediction);
