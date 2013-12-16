@@ -18,7 +18,7 @@
 
 using namespace barrett::math;
 
-#define INPUT_LAYER_SIZE 103
+#define INPUT_LAYER_SIZE 107
 #define HIDDEN_LAYER_SIZE 25
 #define LABEL_SIZE 50
 
@@ -127,8 +127,9 @@ void ObjectRecognizer::readmat(Matrix<R,C>& mat, const char* filename) {
 	std::string line;
 	int i = 0;
 	while (getline(ifs, line)) {
+//      printf("Read line: %s\n", line.c_str());
 		if (!parseDoubles(mat, i++, line)) {
-			printw("WARNING: SSV file parsing failed: %s\0", filename);
+			printf("WARNING: SSV file parsing failed: %s", filename);
 		}
 	}
 	ifs.close();
@@ -157,6 +158,7 @@ void ObjectRecognizer::predict(
 	const tactile_data* tactData = tactOut->getValue();
 	samples << 1,
 		(*fingerPosOut->getValue()).transpose(),
+        0, 0, 0, 0,
 		(*forceTorqueOut->getValue()).transpose(),
 		tactData->row(0),
 		tactData->row(1),
@@ -174,9 +176,9 @@ void ObjectRecognizer::predict(
 	h2.row(0).maxCoeff(&prediction);
 	const char* label = labelmap[prediction];
 	if (label[0] == 'a' || label[0] == 'e' || label[0] == 'i' || label[0] == 'o' || label[0] == 'u') {
-		printlog("This object is an %s.\n\0", label);
+		printlog("This object is an %s (#%d).\n", label, prediction);
 	} else {
-		printlog("This object is a %s.\n\0", label);
+		printlog("This object is a %s (#%d).\n", label, prediction);
 	}
 }
 

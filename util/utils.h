@@ -44,7 +44,9 @@ bool parseDoubles(barrett::math::Matrix<R,C>& dest, int row, const std::string& 
 	const char* next = cur;
 
 	for (int i = 0; i < C; ++i) {
-		dest(row, i) = strtod(cur, (char**) &next);
+		double d = strtod(cur, (char**) &next);
+//      printf("Read double: %f\n", d);
+		dest(row, i) = d;
 		if (cur == next) {
 			return false;
 		} else {
