@@ -22,7 +22,7 @@ using namespace barrett::math;
 #define HIDDEN_LAYER_SIZE 25
 #define LABEL_SIZE 17
 
-std::string labelmap[51] = {
+std::string labelmap[LABEL_SIZE+1] = {
 		std::string("Nothing"),
 		std::string("BeanBag"),
 		std::string("Bottle"),
