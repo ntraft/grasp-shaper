@@ -172,7 +172,7 @@ void ObjectRecognizer::predict(
 	// Get maximum probable label.
 	std::cout << h2 << std::endl;
 	int prediction = 0;
-	double max = std::numeric_limits<double>::min();
+	double max = 0;
 	for (int i = 0; i < LABEL_SIZE; i++) {
 		if (h2(0, i) > max) {
 			max = h2(0, i);
@@ -181,9 +181,9 @@ void ObjectRecognizer::predict(
 	}
 	const char* label = labelmap[prediction].c_str();
 	if (label[0] == 'a' || label[0] == 'e' || label[0] == 'i' || label[0] == 'o' || label[0] == 'u') {
-		printlog("This object is an %s (#%d).\n", label, prediction);
+		printw("This object is an %s (#%d).\n", label, prediction);
 	} else {
-		printlog("This object is a %s (#%d).\n", label, prediction);
+		printw("This object is a %s (#%d).\n", label, prediction);
 	}
 }
 
