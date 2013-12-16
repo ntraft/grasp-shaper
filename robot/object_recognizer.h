@@ -22,7 +22,59 @@ using namespace barrett::math;
 #define HIDDEN_LAYER_SIZE 25
 #define LABEL_SIZE 50
 
-const char labelmap[50][64] = {};
+const char labelmap[51][64] = {
+		"nothing",
+		"bean bag",
+		"bean bag",
+		"bean bag",
+		"bean bag",
+		"bean bag",
+		"bottle",
+		"bottle",
+		"bottle",
+		"cardboard",
+		"cardboard",
+		"cardboard",
+		"cube",
+		"cube",
+		"cube",
+		"cube",
+		"cube",
+		"peanut can",
+		"peanut can",
+		"peanut can",
+		"peanut can",
+		"peanut can",
+		"wooden egg",
+		"wooden egg",
+		"wooden egg",
+		"wooden egg",
+		"wooden egg",
+		"(small) football",
+		"(small) football",
+		"(small) football",
+		"(small) football",
+		"(small) football",
+		"octopus",
+		"piece of foam",
+		"piece of foam",
+		"puck",
+		"puck",
+		"small piece of foam",
+		"small piece of foam",
+		"soccer ball",
+		"styrofoam ball",
+		"styrofoam ball",
+		"styrofoam ball",
+		"styrofoam ball",
+		"wicker ball",
+		"wicker ball",
+		"wicker ball",
+		"wicker ball",
+		"wood",
+		"wood",
+		"wrist attachment"
+};
 
 class ObjectRecognizer {
 public:
@@ -32,6 +84,9 @@ public:
 	void predictObject(char graspType);
 
 protected:
+
+	template<int R, int C>
+	void readmat(Matrix<R,C>& mat, const char* filename);
 
 	void predict(
 			Matrix<INPUT_LAYER_SIZE+1, HIDDEN_LAYER_SIZE> layer1,
@@ -62,7 +117,21 @@ protected:
 ObjectRecognizer::ObjectRecognizer(FingerPositionOutput* fingerPosOut, ForceTorqueOutput* forceTorqueOut, TactileOutput* tactOut) :
 	fingerPosOut(fingerPosOut), forceTorqueOut(forceTorqueOut), tactOut(tactOut)
 {
-	// TODO read in NN params
+	readmat(glayer1, "glayer1.ssv");
+	readmat(glayer2, "glayer2.ssv");
+}
+
+template<int R, int C>
+void ObjectRecognizer::readmat(Matrix<R,C>& mat, const char* filename) {
+	std::ifstream ifs(filename);
+	std::string line;
+	int i = 0;
+	while (getline(ifs, line)) {
+		if (!parseDoubles(mat, i++, line)) {
+			printw("WARNING: SSV file parsing failed: %s", filename);
+		}
+	}
+	ifs.close();
 }
 
 void ObjectRecognizer::predictObject(char graspType) {
