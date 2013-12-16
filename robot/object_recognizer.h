@@ -20,60 +20,27 @@ using namespace barrett::math;
 
 #define INPUT_LAYER_SIZE 103
 #define HIDDEN_LAYER_SIZE 25
-#define LABEL_SIZE 50
+#define LABEL_SIZE 17
 
-const char labelmap[51][64] = {
-		"nothing",
-		"bean bag",
-		"bean bag",
-		"bean bag",
-		"bean bag",
-		"bean bag",
-		"bottle",
-		"bottle",
-		"bottle",
-		"cardboard",
-		"cardboard",
-		"cardboard",
-		"cube",
-		"cube",
-		"cube",
-		"cube",
-		"cube",
-		"peanut can",
-		"peanut can",
-		"peanut can",
-		"peanut can",
-		"peanut can",
-		"wooden egg",
-		"wooden egg",
-		"wooden egg",
-		"wooden egg",
-		"wooden egg",
-		"(small) football",
-		"(small) football",
-		"(small) football",
-		"(small) football",
-		"(small) football",
-		"octopus",
-		"piece of foam",
-		"piece of foam",
-		"puck",
-		"puck",
-		"small piece of foam",
-		"small piece of foam",
-		"soccer ball",
-		"styrofoam ball",
-		"styrofoam ball",
-		"styrofoam ball",
-		"styrofoam ball",
-		"wicker ball",
-		"wicker ball",
-		"wicker ball",
-		"wicker ball",
-		"wood",
-		"wood",
-		"wrist attachment"
+std::string labelmap[51] = {
+		std::string("Nothing"),
+		std::string("BeanBag"),
+		std::string("Bottle"),
+		std::string("Cone"),
+		std::string("Cookie"),
+		std::string("Cube"),
+		std::string("Egg"),
+		std::string("FoamSquare"),
+		std::string("FoamStar"),
+		std::string("FoamUgly"),
+		std::string("Football"),
+		std::string("Octopus"),
+		std::string("SoftFoam"),
+		std::string("Tape"),
+		std::string("WhiteBall"),
+		std::string("WickerBall"),
+		std::string("WoodBlock"),
+		std::string("Fail"),
 };
 
 class ObjectRecognizer {
@@ -128,7 +95,7 @@ void ObjectRecognizer::readmat(Matrix<R,C>& mat, const char* filename) {
 	int i = 0;
 	while (getline(ifs, line)) {
 		if (!parseDoubles(mat, i++, line)) {
-			printw("WARNING: SSV file parsing failed: %s", filename);
+			printf("WARNING: SSV file parsing failed: %s\n", filename);
 		}
 	}
 	ifs.close();
@@ -170,14 +137,21 @@ void ObjectRecognizer::predict(
 	Matrix<1, LABEL_SIZE> h2 = passThroughLayer(h1a, layer2);
 
 	// Get maximum probable label.
-	int prediction;
-	h2.row(0).maxCoeff(&prediction);
-	const char* label = labelmap[prediction];
-	if (label[0] == 'a' || label[0] == 'e' || label[0] == 'i' || label[0] == 'o' || label[0] == 'u') {
-		printlog("This object is an %s.\n", label);
-	} else {
-		printlog("This object is a %s.\n", label);
+	int prediction = 0;
+	double max = 0;
+	for (int i = 0; i < LABEL_SIZE; i++) {
+		if (h2(0, i) > max) {
+			max = h2(0, i);
+			prediction = i;
+		}
 	}
+	const char* label = labelmap[prediction+1].c_str();
+	if (label[0] == 'a' || label[0] == 'e' || label[0] == 'i' || label[0] == 'o' || label[0] == 'u') {
+		printw("This object is an %s (#%d).\n", label, prediction);
+	} else {
+		printw("This object is a %s (#%d).\n", label, prediction);
+	}
+	refresh();
 }
 
 template<int NumSamples, int FromSize, int ToSize>

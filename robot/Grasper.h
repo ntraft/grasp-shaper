@@ -170,7 +170,7 @@ void Grasper<DOF>::setPositions(char graspType) {
 		throw 1;
 		return;
 	}
-	if (graspThread != NULL && graspThread->graspType == graspType && !graspThread->failed) {
+	if (false && graspThread != NULL && graspThread->graspType == graspType && !graspThread->failed) {
 		handPrepPos = graspThread->graspShape;
 		// 70% of the original closure.
 		handPrepPos[0] *= .7;
