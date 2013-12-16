@@ -37,5 +37,30 @@ void printData(const char* msg, const barrett::math::Matrix<R,1, Units>& from) {
 	refresh();
 }
 
+// parses a string of space-separated doubles into a vector of doubles
+template<int R, int C>
+bool parseDoubles(barrett::math::Matrix<R,C>& dest, int row, const std::string& str) {
+	const char* cur = str.c_str();
+	const char* next = cur;
+
+	for (int i = 0; i < C; ++i) {
+		dest(row, i) = strtod(cur, (char**) &next);
+		if (cur == next) {
+			return false;
+		} else {
+			cur = next;
+		}
+	}
+
+	// Make sure there are no extra numbers in the string.
+	double ignore = strtod(cur, (char**) &next);
+	(void)ignore;  // Prevent unused variable warnings
+
+	if (cur != next) {
+		return false;
+	}
+
+	return true;
+}
 
 #endif /* UTILS_H_ */

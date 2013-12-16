@@ -50,6 +50,9 @@ private:
     ForceTorqueOutput forceTorqueOut;
     TactileOutput tactOut;
 
+    // Object Recognition
+    ObjectRecognizer recognizer;
+
 	// Joint positions
 	jp_type prepPos;
 	jp_type targetPos;
@@ -90,6 +93,7 @@ Grasper<DOF>::Grasper(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* 
 	em(em), wam(wam), hand(hand), ftSensor(ftSensor),
 	logCount(0), objName("\0"), currGrasp('\0'), threadRunner(NULL), graspThread(NULL),
 	fingerPosOut(hand), fingerTorqueOut(hand), forceTorqueOut(ftSensor), tactOut(hand->getTactilePucks()),
+	recognizer(&fingerPosOut, &forceTorqueOut, &tactOut),
 	prepPos(inFrontPos), targetPos(powerPos), handPrepPos(prism),
 	inFront(inFrontPos), above(abovePos), power(powerPos), precision(precisionPos), topDown(topDownPos)
 {
@@ -118,7 +122,7 @@ void Grasper<DOF>::doGrasp(char graspType) {
 	currGrasp = graspType;
 	setPositions(graspType);
 	halt();
-	graspThread = new GraspThread<DOF>(em, wam, hand, ftSensor, sensorData,
+	graspThread = new GraspThread<DOF>(em, wam, hand, ftSensor, &recognizer, sensorData,
 			&logCount, objName, currGrasp, prepPos, targetPos, handPrepPos);
 	threadRunner = new boost::thread(graspEntryPoint<DOF>, graspThread);
 }
