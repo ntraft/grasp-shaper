@@ -129,8 +129,8 @@ void ObjectRecognizer::predict(
 	samples << 1,
 		(*fingerPosOut->getValue()).transpose(),
 		(*forceTorqueOut->getValue()).transpose(),
-		tactData->block(0,1,1,2),
-		tactData->block(0,1,4,92),
+		tactData->row(0).segment(1,2),
+		tactData->row(0).segment(4,20),
 		tactData->row(1),
 		tactData->row(2),
 		tactData->row(3);
