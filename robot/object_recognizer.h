@@ -23,57 +23,57 @@ using namespace barrett::math;
 #define LABEL_SIZE 50
 
 const char labelmap[51][64] = {
-		"nothing",
-		"bean bag",
-		"bean bag",
-		"bean bag",
-		"bean bag",
-		"bean bag",
-		"bottle",
-		"bottle",
-		"bottle",
-		"cardboard",
-		"cardboard",
-		"cardboard",
-		"cube",
-		"cube",
-		"cube",
-		"cube",
-		"cube",
-		"peanut can",
-		"peanut can",
-		"peanut can",
-		"peanut can",
-		"peanut can",
-		"wooden egg",
-		"wooden egg",
-		"wooden egg",
-		"wooden egg",
-		"wooden egg",
-		"(small) football",
-		"(small) football",
-		"(small) football",
-		"(small) football",
-		"(small) football",
-		"octopus",
-		"piece of foam",
-		"piece of foam",
-		"puck",
-		"puck",
-		"small piece of foam",
-		"small piece of foam",
-		"soccer ball",
-		"styrofoam ball",
-		"styrofoam ball",
-		"styrofoam ball",
-		"styrofoam ball",
-		"wicker ball",
-		"wicker ball",
-		"wicker ball",
-		"wicker ball",
-		"wood",
-		"wood",
-		"wrist attachment"
+		"nothing\0",
+		"bean bag\0",
+		"bean bag\0",
+		"bean bag\0",
+		"bean bag\0",
+		"bean bag\0",
+		"bottle\0",
+		"bottle\0",
+		"bottle\0",
+		"cardboard\0",
+		"cardboard\0",
+		"cardboard\0",
+		"cube\0",
+		"cube\0",
+		"cube\0",
+		"cube\0",
+		"cube\0",
+		"peanut can\0",
+		"peanut can\0",
+		"peanut can\0",
+		"peanut can\0",
+		"peanut can\0",
+		"wooden egg\0",
+		"wooden egg\0",
+		"wooden egg\0",
+		"wooden egg\0",
+		"wooden egg\0",
+		"(small) football\0",
+		"(small) football\0",
+		"(small) football\0",
+		"(small) football\0",
+		"(small) football\0",
+		"octopus\0",
+		"piece of foam\0",
+		"piece of foam\0",
+		"puck\0",
+		"puck\0",
+		"small piece of foam\0",
+		"small piece of foam\0",
+		"soccer ball\0",
+		"styrofoam ball\0",
+		"styrofoam ball\0",
+		"styrofoam ball\0",
+		"styrofoam ball\0",
+		"wicker ball\0",
+		"wicker ball\0",
+		"wicker ball\0",
+		"wicker ball\0",
+		"wood\0",
+		"wood\0",
+		"wrist attachment\0"
 };
 
 class ObjectRecognizer {
@@ -128,7 +128,7 @@ void ObjectRecognizer::readmat(Matrix<R,C>& mat, const char* filename) {
 	int i = 0;
 	while (getline(ifs, line)) {
 		if (!parseDoubles(mat, i++, line)) {
-			printw("WARNING: SSV file parsing failed: %s", filename);
+			printw("WARNING: SSV file parsing failed: %s\0", filename);
 		}
 	}
 	ifs.close();
@@ -174,9 +174,9 @@ void ObjectRecognizer::predict(
 	h2.row(0).maxCoeff(&prediction);
 	const char* label = labelmap[prediction];
 	if (label[0] == 'a' || label[0] == 'e' || label[0] == 'i' || label[0] == 'o' || label[0] == 'u') {
-		printlog("This object is an %s.\n", label);
+		printlog("This object is an %s.\n\0", label);
 	} else {
-		printlog("This object is a %s.\n", label);
+		printlog("This object is a %s.\n\0", label);
 	}
 }
 
