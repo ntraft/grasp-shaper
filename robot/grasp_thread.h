@@ -9,6 +9,7 @@
 #define GRASP_THREAD_H_
 
 #include "utils.h"
+#include "object_recognizer.h"
 #include "finger_position_output.h"
 #include "fingertip_torque_output.h"
 #include "force_torque_output.h"
@@ -48,6 +49,9 @@ private:
 	Hand* hand;
 	ForceTorqueSensor* ftSensor;
 
+	// Object recognition
+	ObjectRecognizer* recognizer;
+
     // Data logging
 	unsigned int* logCount;
 	char tmpFile[14];
@@ -67,7 +71,8 @@ public:
 	bool failed;
 
 	GraspThread(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand, ForceTorqueSensor* ftSensor,
-			systems::TupleGrouper<SENSOR_TYPES>& sensorData, unsigned int* logCount, const char* objName, char graspType,
+			ObjectRecognizer* recognizer, systems::TupleGrouper<SENSOR_TYPES>& sensorData,
+			unsigned int* logCount, const char* objName, char graspType,
 			jp_type prepPos, jp_type targetPos, Hand::jp_type handPrepPos);
 	virtual ~GraspThread();
 
@@ -117,9 +122,11 @@ void graspEntryPoint(GraspThread<DOF>* gt) {
 
 template<size_t DOF>
 GraspThread<DOF>::GraspThread(systems::RealTimeExecutionManager* em, systems::Wam<DOF>* wam, Hand* hand, ForceTorqueSensor* ftSensor,
-		systems::TupleGrouper<SENSOR_TYPES>& sensorData, unsigned int* logCount, const char* objName, char graspType,
+		ObjectRecognizer* recognizer, systems::TupleGrouper<SENSOR_TYPES>& sensorData,
+		unsigned int* logCount, const char* objName, char graspType,
 		jp_type prepPos, jp_type targetPos, Hand::jp_type handPrepPos) :
-	em(em), wam(wam), hand(hand), ftSensor(ftSensor), logCount(logCount), T_s(em->getPeriod()), time(em),
+	em(em), wam(wam), hand(hand), ftSensor(ftSensor), recognizer(recognizer),
+	logCount(logCount), T_s(em->getPeriod()), time(em),
 	logger(NULL), objName(objName), graspType(graspType),
 	prepPos(prepPos), targetPos(targetPos), handPrepPos(handPrepPos),
 	failed(false)
@@ -242,7 +249,7 @@ void GraspThread<DOF>::liftAndReturn() {
 	wam->moveTo(liftPos, false);
 	pauseUntilMoveIsDone();
 	recordGraspShape();
-	Pause(2000);
+	recognizer->predictObject(graspType);
 	wam->moveTo(targetPos, false);
 	pauseUntilMoveIsDone();
 }

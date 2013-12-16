@@ -35,6 +35,9 @@ public:
 	}
 
 	void checkUpdate();
+	const OutputType* getValue() {
+		return this->outputValue->getData();
+	}
 
 protected:
 	virtual void invalidateOutputs() { /* do nothing */ }
