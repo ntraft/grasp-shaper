@@ -126,7 +126,6 @@ void ObjectRecognizer::readmat(Matrix<R,C>& mat, const char* filename) {
 	std::string line;
 	int i = 0;
 	while (getline(ifs, line)) {
-//      printf("Read line: %s\n", line.c_str());
 		if (!parseDoubles(mat, i++, line)) {
 			printf("WARNING: SSV file parsing failed: %s\n", filename);
 		}
@@ -171,9 +170,15 @@ void ObjectRecognizer::predict(
 	Matrix<1, LABEL_SIZE> h2 = passThroughLayer(h1a, layer2);
 
 	// Get maximum probable label.
-	int dummy, prediction;
-	h2.maxCoeff(&dummy, &prediction);
 	std::cout << h2 << std::endl;
+	int prediction = 0;
+	double max = std::numeric_limits<double>::min();
+	for (int i = 0; i < LABEL_SIZE; i++) {
+		if (h2(0, i) > max) {
+			max = h2(0, i);
+			prediction = i;
+		}
+	}
 	const char* label = labelmap[prediction].c_str();
 	if (label[0] == 'a' || label[0] == 'e' || label[0] == 'i' || label[0] == 'o' || label[0] == 'u') {
 		printlog("This object is an %s (#%d).\n", label, prediction);
