@@ -86,6 +86,10 @@ ObjectRecognizer::ObjectRecognizer(FingerPositionOutput* fingerPosOut, ForceTorq
 {
 	readmat(glayer1, "glayer1.ssv");
 	readmat(glayer2, "glayer2.ssv");
+	readmat(mlayer1, "mlayer1.ssv");
+	readmat(mlayer2, "mlayer2.ssv");
+	readmat(wlayer1, "wlayer1.ssv");
+	readmat(wlayer2, "wlayer2.ssv");
 }
 
 template<int R, int C>
@@ -125,8 +129,8 @@ void ObjectRecognizer::predict(
 	samples << 1,
 		(*fingerPosOut->getValue()).transpose(),
 		(*forceTorqueOut->getValue()).transpose(),
-		tactData->row(0).segment(1,2),
-		tactData->row(0).segment(4,92),
+		tactData->block(0,1,1,2),
+		tactData->block(0,1,4,92),
 		tactData->row(1),
 		tactData->row(2),
 		tactData->row(3);
