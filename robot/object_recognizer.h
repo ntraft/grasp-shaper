@@ -18,7 +18,7 @@
 
 using namespace barrett::math;
 
-#define INPUT_LAYER_SIZE 103
+#define INPUT_LAYER_SIZE 101
 #define HIDDEN_LAYER_SIZE 25
 #define LABEL_SIZE 17
 
@@ -125,7 +125,8 @@ void ObjectRecognizer::predict(
 	samples << 1,
 		(*fingerPosOut->getValue()).transpose(),
 		(*forceTorqueOut->getValue()).transpose(),
-		tactData->row(0),
+		tactData->row(0).segment(1,2),
+		tactData->row(0).segment(4,92),
 		tactData->row(1),
 		tactData->row(2),
 		tactData->row(3);
