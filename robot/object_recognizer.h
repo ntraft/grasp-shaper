@@ -86,6 +86,10 @@ ObjectRecognizer::ObjectRecognizer(FingerPositionOutput* fingerPosOut, ForceTorq
 {
 	readmat(glayer1, "glayer1.ssv");
 	readmat(glayer2, "glayer2.ssv");
+	readmat(mlayer1, "mlayer1.ssv");
+	readmat(mlayer2, "mlayer2.ssv");
+	readmat(wlayer1, "wlayer1.ssv");
+	readmat(wlayer2, "wlayer2.ssv");
 }
 
 template<int R, int C>
