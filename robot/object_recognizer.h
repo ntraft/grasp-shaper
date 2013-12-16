@@ -18,61 +18,29 @@
 
 using namespace barrett::math;
 
-#define INPUT_LAYER_SIZE 107
+#define INPUT_LAYER_SIZE 103
 #define HIDDEN_LAYER_SIZE 25
-#define LABEL_SIZE 50
+#define LABEL_SIZE 17
 
 std::string labelmap[51] = {
-		std::string("bean bag,g"),
-		std::string("bean bag,m"),
-		std::string("bean bag,p"),
-		std::string("bean bag,t"),
-		std::string("bean bag,w"),
-		std::string("bottle,g"),
-		std::string("bottle,p"),
-		std::string("bottle,w"),
-		std::string("cardboard,p"),
-		std::string("cardboard,g"),
-		std::string("cardboard,w"),
-		std::string("cube,g"),
-		std::string("cube,w"),
-		std::string("cube,m"),
-		std::string("cube,t"),
-		std::string("cube,p"),
-		std::string("peanut can,g"),
-		std::string("peanut can,p"),
-		std::string("peanut can,w"),
-		std::string("peanut can,m"),
-		std::string("peanut can,t"),
-		std::string("wooden egg,w"),
-		std::string("wooden egg,g"),
-		std::string("wooden egg,p"),
-		std::string("wooden egg,m"),
-		std::string("wooden egg,t"),
-		std::string("(small) football,m"),
-		std::string("(small) football,t"),
-		std::string("(small) football,p"),
-		std::string("(small) football,w"),
-		std::string("(small) football,g"),
-		std::string("octopus,g"),
-		std::string("piece of foam,m"),
-		std::string("piece of foam,t"),
-		std::string("puck,m"),
-		std::string("puck,t"),
-		std::string("small piece of foam,g"),
-		std::string("small piece of foam,w"),
-		std::string("soccer ball,t"),
-		std::string("styrofoam ball,m"),
-		std::string("styrofoam ball,t"),
-		std::string("styrofoam ball,g"),
-		std::string("styrofoam ball,p"),
-		std::string("wicker ball,t"),
-		std::string("wicker ball,m"),
-		std::string("wicker ball,g"),
-		std::string("wicker ball,p"),
-		std::string("wood,m"),
-		std::string("wood,t"),
-		std::string("wrist attachment,g"),
+		std::string("Nothing"),
+		std::string("BeanBag"),
+		std::string("Bottle"),
+		std::string("Cone"),
+		std::string("Cookie"),
+		std::string("Cube"),
+		std::string("Egg"),
+		std::string("FoamSquare"),
+		std::string("FoamStar"),
+		std::string("FoamUgly"),
+		std::string("Football"),
+		std::string("Octopus"),
+		std::string("SoftFoam"),
+		std::string("Tape"),
+		std::string("WhiteBall"),
+		std::string("WickerBall"),
+		std::string("WoodBlock"),
+		std::string("Fail"),
 };
 
 class ObjectRecognizer {
@@ -156,7 +124,6 @@ void ObjectRecognizer::predict(
 	const tactile_data* tactData = tactOut->getValue();
 	samples << 1,
 		(*fingerPosOut->getValue()).transpose(),
-        0, 0, 0, 0,
 		(*forceTorqueOut->getValue()).transpose(),
 		tactData->row(0),
 		tactData->row(1),
@@ -170,7 +137,6 @@ void ObjectRecognizer::predict(
 	Matrix<1, LABEL_SIZE> h2 = passThroughLayer(h1a, layer2);
 
 	// Get maximum probable label.
-	std::cout << h2 << std::endl;
 	int prediction = 0;
 	double max = 0;
 	for (int i = 0; i < LABEL_SIZE; i++) {
@@ -179,12 +145,13 @@ void ObjectRecognizer::predict(
 			prediction = i;
 		}
 	}
-	const char* label = labelmap[prediction].c_str();
+	const char* label = labelmap[prediction+1].c_str();
 	if (label[0] == 'a' || label[0] == 'e' || label[0] == 'i' || label[0] == 'o' || label[0] == 'u') {
 		printw("This object is an %s (#%d).\n", label, prediction);
 	} else {
 		printw("This object is a %s (#%d).\n", label, prediction);
 	}
+	refresh();
 }
 
 template<int NumSamples, int FromSize, int ToSize>
