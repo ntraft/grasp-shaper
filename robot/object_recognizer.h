@@ -129,11 +129,7 @@ void ObjectRecognizer::readmat(Matrix<R,C>& mat, const char* filename) {
 	while (getline(ifs, line)) {
 //      printf("Read line: %s\n", line.c_str());
 		if (!parseDoubles(mat, i++, line)) {
-<<<<<<< HEAD
-			printf("WARNING: SSV file parsing failed: %s", filename);
-=======
-			printw("WARNING: SSV file parsing failed: %s", filename);
->>>>>>> accb1619b63a11054f98b3483158b3b97b49f799
+			printf("WARNING: SSV file parsing failed: %s\n", filename);
 		}
 	}
 	ifs.close();
