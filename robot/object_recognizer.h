@@ -54,10 +54,16 @@ protected:
 
 	template<int R, int C>
 	void readmat(Matrix<R,C>& mat, const char* filename);
+	void readnormalizers(const char* filename);
+	template<int R, int C>
+	void parseline(Matrix<R,C>& dest, int row, const std::string& str, const char* filename);
+
 
 	void predict(
 			Matrix<INPUT_LAYER_SIZE+1, HIDDEN_LAYER_SIZE> layer1,
-			Matrix<HIDDEN_LAYER_SIZE+1, LABEL_SIZE> layer2);
+			Matrix<HIDDEN_LAYER_SIZE+1, LABEL_SIZE> layer2,
+			Matrix<1, INPUT_LAYER_SIZE+1> mu,
+			Matrix<1, INPUT_LAYER_SIZE+1> sigma);
 
 	template<int NumSamples, int FromSize, int ToSize>
 	Matrix<NumSamples, ToSize> passThroughLayer(
@@ -79,6 +85,13 @@ protected:
     Matrix<HIDDEN_LAYER_SIZE+1, LABEL_SIZE> mlayer2;
     Matrix<INPUT_LAYER_SIZE+1, HIDDEN_LAYER_SIZE> wlayer1;
     Matrix<HIDDEN_LAYER_SIZE+1, LABEL_SIZE> wlayer2;
+
+	Matrix<1, INPUT_LAYER_SIZE+1> gmu;
+	Matrix<1, INPUT_LAYER_SIZE+1> gsigma;
+	Matrix<1, INPUT_LAYER_SIZE+1> mmu;
+	Matrix<1, INPUT_LAYER_SIZE+1> msigma;
+	Matrix<1, INPUT_LAYER_SIZE+1> wmu;
+	Matrix<1, INPUT_LAYER_SIZE+1> wsigma;
 };
 
 ObjectRecognizer::ObjectRecognizer(FingerPositionOutput* fingerPosOut, ForceTorqueOutput* forceTorqueOut, TactileOutput* tactOut) :
@@ -90,6 +103,7 @@ ObjectRecognizer::ObjectRecognizer(FingerPositionOutput* fingerPosOut, ForceTorq
 	readmat(mlayer2, "mlayer2.ssv");
 	readmat(wlayer1, "wlayer1.ssv");
 	readmat(wlayer2, "wlayer2.ssv");
+	readnormalizers("normalizers.ssv");
 }
 
 template<int R, int C>
@@ -98,30 +112,55 @@ void ObjectRecognizer::readmat(Matrix<R,C>& mat, const char* filename) {
 	std::string line;
 	int i = 0;
 	while (getline(ifs, line)) {
-		if (!parseDoubles(mat, i++, line)) {
-			printf("WARNING: SSV file parsing failed: %s\n", filename);
-		}
+		parseline(mat, i++, line);
 	}
 	ifs.close();
+}
+
+void ObjectRecognizer::readnormalizers(const char* filename) {
+	std::ifstream ifs(filename);
+	std::string line;
+	getline(ifs, line);
+	parseline(gmu, 0, line, filename);
+	getline(ifs, line);
+	parseline(gsigma, 0, line, filename);
+	getline(ifs, line);
+	parseline(mmu, 0, line, filename);
+	getline(ifs, line);
+	parseline(msigma, 0, line, filename);
+	getline(ifs, line);
+	parseline(wmu, 0, line, filename);
+	getline(ifs, line);
+	parseline(wsigma, 0, line, filename);
+	ifs.close();
+}
+
+template<int R, int C>
+void ObjectRecognizer::parseline(Matrix<R,C>& dest, int row, const std::string& str, const char* filename) {
+	if (!parseDoubles(mat, row, line)) {
+		printf("WARNING: SSV file parsing failed: %s\n", filename);
+	}
 }
 
 void ObjectRecognizer::predictObject(char graspType) {
 	switch (graspType) {
 	case 'g':
-		predict(glayer1, glayer2);
+		predict(glayer1, glayer2, gmu, gsigma);
 		break;
 	case 'm':
-		predict(mlayer1, mlayer2);
+		predict(mlayer1, mlayer2, mmu, msigma);
 		break;
 	case 'w':
-		predict(wlayer1, wlayer2);
+		predict(wlayer1, wlayer2, wmu, wsigma);
 		break;
 	}
 }
 
 void ObjectRecognizer::predict(
 		Matrix<INPUT_LAYER_SIZE+1, HIDDEN_LAYER_SIZE> layer1,
-		Matrix<HIDDEN_LAYER_SIZE+1, LABEL_SIZE> layer2)
+		Matrix<HIDDEN_LAYER_SIZE+1, LABEL_SIZE> layer2,
+		Matrix<1, INPUT_LAYER_SIZE+1> mu,
+		Matrix<1, INPUT_LAYER_SIZE+1> sigma)
 {
 	// Collect Samples
 	Matrix<1, INPUT_LAYER_SIZE+1> samples;
@@ -134,6 +173,7 @@ void ObjectRecognizer::predict(
 		tactData->row(1),
 		tactData->row(2),
 		tactData->row(3);
+	samples = samples - mu / sigma;
 
 	// Feed forward through neural network
 	Matrix<1, HIDDEN_LAYER_SIZE> h1 = passThroughLayer(samples, layer1);
