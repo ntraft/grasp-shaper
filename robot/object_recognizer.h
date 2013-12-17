@@ -86,12 +86,12 @@ protected:
     Matrix<INPUT_LAYER_SIZE+1, HIDDEN_LAYER_SIZE> wlayer1;
     Matrix<HIDDEN_LAYER_SIZE+1, LABEL_SIZE> wlayer2;
 
-	Matrix<1, INPUT_LAYER_SIZE+1> gmu;
-	Matrix<1, INPUT_LAYER_SIZE+1> gsigma;
-	Matrix<1, INPUT_LAYER_SIZE+1> mmu;
-	Matrix<1, INPUT_LAYER_SIZE+1> msigma;
-	Matrix<1, INPUT_LAYER_SIZE+1> wmu;
-	Matrix<1, INPUT_LAYER_SIZE+1> wsigma;
+	Matrix<1, INPUT_LAYER_SIZE> gmu;
+	Matrix<1, INPUT_LAYER_SIZE> gsigma;
+	Matrix<1, INPUT_LAYER_SIZE> mmu;
+	Matrix<1, INPUT_LAYER_SIZE> msigma;
+	Matrix<1, INPUT_LAYER_SIZE> wmu;
+	Matrix<1, INPUT_LAYER_SIZE> wsigma;
 };
 
 ObjectRecognizer::ObjectRecognizer(FingerPositionOutput* fingerPosOut, ForceTorqueOutput* forceTorqueOut, TactileOutput* tactOut) :
@@ -123,13 +123,13 @@ void ObjectRecognizer::readnormalizers(const char* filename) {
 	getline(ifs, line);
 	parseline(gmu, 0, line, filename);
 	getline(ifs, line);
-	parseline(gsigma, 0, line, filename);
-	getline(ifs, line);
 	parseline(mmu, 0, line, filename);
 	getline(ifs, line);
-	parseline(msigma, 0, line, filename);
-	getline(ifs, line);
 	parseline(wmu, 0, line, filename);
+	getline(ifs, line);
+	parseline(gsigma, 0, line, filename);
+	getline(ifs, line);
+	parseline(msigma, 0, line, filename);
 	getline(ifs, line);
 	parseline(wsigma, 0, line, filename);
 	ifs.close();
@@ -163,9 +163,9 @@ void ObjectRecognizer::predict(
 		Matrix<1, INPUT_LAYER_SIZE+1> sigma)
 {
 	// Collect Samples
-	Matrix<1, INPUT_LAYER_SIZE+1> samples;
+	Matrix<1, INPUT_LAYER_SIZE> raw;
 	const tactile_data* tactData = tactOut->getValue();
-	samples << 1,
+	raw << 1,
 		(*fingerPosOut->getValue()).transpose(),
 		(*forceTorqueOut->getValue()).transpose(),
 		tactData->row(0).segment(1,2),
@@ -173,7 +173,9 @@ void ObjectRecognizer::predict(
 		tactData->row(1),
 		tactData->row(2),
 		tactData->row(3);
-	samples = samples - mu / sigma;
+	raw = raw - mu / sigma;
+	Matrix<1, INPUT_LAYER_SIZE+1> samples;
+	samples << 1, raw;
 
 	// Feed forward through neural network
 	Matrix<1, HIDDEN_LAYER_SIZE> h1 = passThroughLayer(samples, layer1);
