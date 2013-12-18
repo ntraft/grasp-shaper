@@ -136,7 +136,7 @@ void ObjectRecognizer::readnormalizers(const char* filename) {
 }
 
 template<int R, int C>
-void ObjectRecognizer::parseline(Matrix<R,C>& dest, int row, const std::string& str, const char* filename) {
+void ObjectRecognizer::parseline(Matrix<R,C>& mat, int row, const std::string& line, const char* filename) {
 	if (!parseDoubles(mat, row, line)) {
 		printf("WARNING: SSV file parsing failed: %s\n", filename);
 	}
