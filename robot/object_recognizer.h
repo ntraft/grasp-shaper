@@ -165,8 +165,7 @@ void ObjectRecognizer::predict(
 	// Collect Samples
 	Matrix<1, INPUT_LAYER_SIZE> raw;
 	const tactile_data* tactData = tactOut->getValue();
-	raw << 1,
-		(*fingerPosOut->getValue()).transpose(),
+	raw << (*fingerPosOut->getValue()).transpose(),
 		(*forceTorqueOut->getValue()).transpose(),
 		tactData->row(0).segment(1,2),
 		tactData->row(0).segment(4,20),
