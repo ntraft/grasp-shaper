@@ -62,8 +62,8 @@ protected:
 	void predict(
 			Matrix<INPUT_LAYER_SIZE+1, HIDDEN_LAYER_SIZE> layer1,
 			Matrix<HIDDEN_LAYER_SIZE+1, LABEL_SIZE> layer2,
-			Matrix<1, INPUT_LAYER_SIZE+1> mu,
-			Matrix<1, INPUT_LAYER_SIZE+1> sigma);
+			Matrix<1, INPUT_LAYER_SIZE> mu,
+			Matrix<1, INPUT_LAYER_SIZE> sigma);
 
 	template<int NumSamples, int FromSize, int ToSize>
 	Matrix<NumSamples, ToSize> passThroughLayer(
@@ -112,7 +112,7 @@ void ObjectRecognizer::readmat(Matrix<R,C>& mat, const char* filename) {
 	std::string line;
 	int i = 0;
 	while (getline(ifs, line)) {
-		parseline(mat, i++, line);
+		parseline(mat, i++, line, filename);
 	}
 	ifs.close();
 }
@@ -159,8 +159,8 @@ void ObjectRecognizer::predictObject(char graspType) {
 void ObjectRecognizer::predict(
 		Matrix<INPUT_LAYER_SIZE+1, HIDDEN_LAYER_SIZE> layer1,
 		Matrix<HIDDEN_LAYER_SIZE+1, LABEL_SIZE> layer2,
-		Matrix<1, INPUT_LAYER_SIZE+1> mu,
-		Matrix<1, INPUT_LAYER_SIZE+1> sigma)
+		Matrix<1, INPUT_LAYER_SIZE> mu,
+		Matrix<1, INPUT_LAYER_SIZE> sigma)
 {
 	// Collect Samples
 	Matrix<1, INPUT_LAYER_SIZE> raw;
@@ -173,7 +173,7 @@ void ObjectRecognizer::predict(
 		tactData->row(1),
 		tactData->row(2),
 		tactData->row(3);
-	raw = raw - mu / sigma;
+	raw = ((raw - mu).cwise() / sigma).eval();
 	Matrix<1, INPUT_LAYER_SIZE+1> samples;
 	samples << 1, raw;
 
