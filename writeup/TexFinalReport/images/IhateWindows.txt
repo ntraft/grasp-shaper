@@ -1,0 +1,10 @@
+\begin{figure}[h]
+%\begin{minipage}{17cm}
+	\centering
+	\includegraphics[width=0.5\textwidth]{programStructure.pdf}	
+	%\setlength{\captionmargin}{50pt}
+	\caption{Approximate timeline of term project.}
+	\label{Overview of experimental succession. Bold solid boxes indicate the active 
+phases of the Barrett hand, while dashed boxes represent the grasp adaptation mechanisms.}
+%\end{minipage}
+\end{figure}

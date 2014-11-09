@@ -1,0 +1,20 @@
+\renewcommand{\thesection}{\Roman{section}}
+\section{Conclusion and Future Work}
+The neural network, as we implemented it, did not yield valid predictions of the object being grasped. The question that remains is whether the method is not suitable for this specific setup or if the data set was not sufficiently large or diverse. Other questions we haven't answered: Why does the network prefer certain objects for certain grasps? What feature influences the neural response? Was there one feature that dominated all other sensor input? Answering these questions proves difficult due to the opacity of the neural network and the difficulty of understanding the function of the parameters ($\Theta$).
+
+Possibilities for the future are numerous. Now that the system is up and running, more data samples could be collected to have different sets for neural network training and testing. This would hopefully remove the excessive similarity between our current training and test sets, and allow us to analyze the performance of the neural network offline, without having to run the robot.
+
+Another important issue would be to fix the lack of finger torque data. In addition to the current setup, a setup with immobile objects (fixed to the workbench) could be further explored. We have observed that if objects are allowed to move, the finger torque response is not significant until all three fingers are simultaneously putting pressure on the object. If the objects were fixed, our original idea to implement a preshaping of the hand could then possibly be performed in a combination of initial contact and object recognition. 
+
+In the course of the project, we became painfully aware of the difficulty of collecting sufficient data for statistical techniques to teach the robot grasp experience. Robots are often slow, and collecting recordings of their experiences in the real time world is time consuming and resource-intensive. One major lesson from all the setbacks we went through is that there may be more to gain from using what is known about human motor control, rather than unpredictable and black-box statistical techniques. Until robots are in widespread use, there may not be enough variety of experiences for them to learn from by brute force alone. We should instead start from a known point using existing knowledge of human haptics and optimize from there.
+\\
+
+
+
+
+
+
+
+ 
+                    
+

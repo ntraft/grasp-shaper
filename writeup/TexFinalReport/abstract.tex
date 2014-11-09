@@ -1,0 +1,7 @@
+\begin{abstract}
+\quad The proposed goal of this project was to be able to adapt the grasp shape of a robotic hand, based on previous experience, to produce a more stable and dexterous grasp. Following this goal, we looked for different ways a robotic hand could build upon its previous grasping experience.
+
+We explored the idea of employing the adaptive grasping algorithms of Humberston and Pai \cite{Ben}, but we found some limitations to implementing this work on the Barrett robotic arm and hand. Instead, we opted to try to classify or recognize the object being grasped using modern statistical techniques. We were able to train a neural network to recognize objects in both training and test data sets with a high degree of accuracy (in some cases over 99\%). However, when these grasps were repeated on the robot, we were unable to obtain any kind of reliable recognition. The reasons for this may be due to a variety of factors which will be discussed in the following paper.
+
+We conclude that the idea of using high-level knowledge about an object to choose strategies for grasping is justified and realizable. However, using neural networks as a tool for encoding this knowledge may not be viable.
+\end{abstract}

@@ -1,0 +1,46 @@
+Neural Network Results
+
+Original Data
+
+
+
+Omitting Faulty Sensors
+
+
+
+Omitting Foam Objects
+
+Heavy Regularization ($\lambda = 1000$)
+Power Grip				Accuracy: 40.48\%
+						All grasps were categorized as either 2, 4, 7, or 16
+						(out of 14 objects total)
+						4 only had 23% precision - but I don't remember seeing cookie cutter that often
+						2 was also popular (again, don't remember seeing bottle that often, but sometimes)
+Heavy Wrap				Accuracy: 39.49\%
+						7, 13, 16 had near 100\% recall
+						2, 4, 5 had smaller recall
+						the remainder had 0\% recall
+						(out of 11 objects total)
+						13 had 35\% precision, 16 had only 27\% (tape? really? I don't ever remember seeing tape)
+Prismatic Precision		Accuracy: 37.94\%
+						All grasps categorized as 4, 7, or 14
+						(out of 12 objects total)
+						7 had 65% precision (which DOES align with what we saw in testing)
+						4 had 27% precision (which DOES align with what we saw in testing)
+
+Moderate Regularization ($\lambda = 100$)
+Power Grip				Accuracy: 97.47\%
+						recall of 11 was 88\%
+						17 had 0\% recall
+Heavy Wrap				Accuracy: 94.80\%
+						17 had 33\% recall; all others good
+Prismatic Precision		Accuracy: 96.38\%
+						17 had 0\% recall
+
+In tests:
+	w gives wood block to everything
+	m gives both cookie and sometimes wood block
+	m gives cookie and white ball
+
+Low Regularization ($\lambda \lt 10$)
+All grips exhibit $\gt 99\%$ accuracy. Not sure if it's worth analyzing in more detail.
